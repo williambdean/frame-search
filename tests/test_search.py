@@ -1,6 +1,6 @@
 import pytest
 
-from datetime import date
+from datetime import datetime
 
 import pandas as pd
 import narwhals as nw
@@ -43,7 +43,7 @@ def test_parse_query(query, expected) -> None:
         ("age:>35.6", [SearchPart("age", ">", 35.6)]),
         (
             "opening_date:>2023-01-01",
-            [SearchPart("opening_date", ">", date(2023, 1, 1))],
+            [SearchPart("opening_date", ">", datetime(2023, 1, 1))],
         ),
     ],
 )
@@ -55,15 +55,16 @@ def test_get_search_parts(query, expected) -> None:
 @pytest.mark.parametrize(
     "query, idx",
     [
-        # ("name:Alice", [0]),
-        ("name:alice", [0]),
-        # ("bob", [1]),
-        # ('hobby:Reading city:"New York"', [0]),
-        ('hobby:read city:"New York"', [0]),
+        ("name:Alice", [0]),
+        # ("name:alice", [0]),
+        ("bob", [1]),
+        ('hobby:Reading city:"New York"', [0]),
+        # ('hobby:read city:"New York"', [0]),
         ("age:35", [2]),
         ("age:>30", [2, 3]),
         ("age:<30", [1]),
         ("hobby:Reading age:<30", [1]),
+        ("first_visit:<2022-01-01", [1, 3]),
     ],
 )
 def test_search_functionality(sample_data, search, query, idx) -> None:

@@ -1,6 +1,6 @@
 from typing import Literal
 
-from datetime import date
+from datetime import datetime
 from dataclasses import dataclass
 import re
 
@@ -20,7 +20,7 @@ def is_date_like(value: str) -> bool:
 class SearchPart:
     key: str | None
     operator: Operator | None
-    value: str | float | int | date
+    value: str | float | int | datetime
 
     @property
     def is_standalone(self) -> bool:
@@ -64,9 +64,9 @@ def get_search_parts(query: str) -> list[SearchPart]:
             if is_date_like(value):
                 # Convert to date object
                 year, month, day = map(int, value.split("-"))
-                value = date(year, month, day)
+                value = datetime(year, month, day)
 
-            if not isinstance(value, date):
+            if not isinstance(value, datetime):
                 try:
                     value = float(value) if "." in value else int(value)
                 except ValueError:

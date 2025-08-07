@@ -16,6 +16,14 @@ def sample_data() -> pd.DataFrame:
             "Age": [30, 25, 35, 40],
             "Hobby": ["Reading", "Reading", "Sports", "Cooking"],
             "City of Interest": ["New York", "Los Angeles", "New York", "Charlotte"],
+            "First Visit": pd.to_datetime(
+                [
+                    "2022-01-15",
+                    "2021-06-20",
+                    "2023-03-10",
+                    "2020-11-05",
+                ],
+            ),
         }
     )
 
@@ -33,6 +41,7 @@ def search():
             "age": "Age",
             "city": "City of Interest",
             "hobby": "Hobby",
+            "first_visit": "First Visit",
         },
         default="Name",
         schema=nw.Schema(
@@ -41,6 +50,7 @@ def search():
                 "Age": int,
                 "Hobby": str,
                 "City of Interest": str,
+                "First Visit": nw.Datetime,
             },
         ),
     )

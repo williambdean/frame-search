@@ -16,9 +16,19 @@ df = pl.DataFrame({
     "hometown": ["New York", "New York", "Chicago"]
 })
 
-df.search("age:<30 hometown:New York")
+df.search('age:<30 hometown:"New York"')
 ```
 
+```text
+shape: (1, 3)
+┌─────────────┬─────┬──────────┐
+│ name        ┆ age ┆ hometown │
+│ ---         ┆ --- ┆ ---      │
+│ str         ┆ i64 ┆ str      │
+╞═════════════╪═════╪══════════╡
+│ Alice Smith ┆ 25  ┆ New York │
+└─────────────┴─────┴──────────┘
+```
 
 # Internal API
 

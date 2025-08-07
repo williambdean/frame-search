@@ -57,7 +57,7 @@ df_filter = df.search(search.value)
 df_filter
 ```
 
-![Marimo Example](./images/marimo_example.png)
+![Marimo Example](./images/marimo-example.png)
 
 # Internal API
 

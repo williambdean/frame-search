@@ -28,3 +28,16 @@ dev = [
     "pytest-cov>=6.2.1",
     "ruff>=0.12.7",
 ]
+
+[tool.pytest.ini_options]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src/frame_search",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--no-cov-on-fail",
+    "--durations=50",
+    "--color=yes",
+]

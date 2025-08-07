@@ -4,18 +4,27 @@ from datetime import datetime
 
 import pandas as pd
 import narwhals as nw
-from frame_search.search import get_search_parts, SearchPart, parse_query
+from frame_search.search import (
+    get_search_parts,
+    SearchPart,
+    parse_query,
+    create_search,
+    NoDefaultSearchColumnError,
+    UnknownSearchColumnError,
+)
 
 
 @pytest.mark.parametrize(
     "query, expected",
     [
+        ("", []),
         ("bob", [("", "", "bob")]),
         ("name:alice", [("name", "alice", "")]),
         ("age:>30", [("age", ">30", "")]),
         ("age:<30", [("age", "<30", "")]),
         ("age:35.5", [("age", "35.5", "")]),
         ("opening_date:<2023-01-01", [("opening_date", "<2023-01-01", "")]),
+        ("bob age:>30", [("", "", "bob"), ("age", ">30", "")]),
         (
             'hobby:reading city:"New York"',
             [
@@ -72,3 +81,18 @@ def test_search_functionality(sample_data, search, query, idx) -> None:
     expected = sample_data.iloc[idx]
 
     pd.testing.assert_frame_equal(result, expected)
+
+
+def test_search_no_default(sample_data) -> None:
+    search = create_search()
+    with pytest.raises(NoDefaultSearchColumnError, match="Standalone value"):
+        nw.from_native(sample_data).filter(search("alice"))
+
+
+def test_search_unknown_column(sample_data) -> None:
+    search = create_search()
+    with pytest.raises(
+        UnknownSearchColumnError,
+        match="Column 'unknown_column'",
+    ):
+        nw.from_native(sample_data).filter(search("unknown_column:alice"))

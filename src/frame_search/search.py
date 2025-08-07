@@ -77,6 +77,25 @@ def get_search_parts(query: str) -> list[SearchPart]:
     return search_parts
 
 
+class NoDefaultSearchColumnError(Exception):
+    """Exception raised when no default search column is set."""
+
+    def __init__(self, value):
+        self.value = value
+
+        super().__init__(
+            f"Standalone value {value!r} found but no default search column is set."
+        )
+
+
+class UnknownSearchColumnError(Exception):
+    """Exception raised when an unknown search column is referenced."""
+
+    def __init__(self, key):
+        self.key = key
+        super().__init__(f"Column {key!r} not found in schema or mapping.")
+
+
 def parse_search_query(
     query: str,
     mapping_to_columns: dict[str, str] | None = None,
@@ -108,9 +127,7 @@ def parse_search_query(
             if default is not None and isinstance(part.value, str):
                 expressions.append(contains(default, part.value))
             else:
-                raise ValueError(
-                    f"Standalone value '{part.value}' found but no default search column is set."
-                )
+                raise NoDefaultSearchColumnError(part.value)
             continue
 
         col = None
@@ -122,13 +139,11 @@ def parse_search_query(
                     if part.key.lower() == schema_col.lower():
                         col = schema_col
             if col is None:
-                raise ValueError(f"Field '{part.key}' not found in schema or mapping.")
+                raise UnknownSearchColumnError(part.key)
         elif default is not None:
             col = default
         else:
-            raise ValueError(
-                f"Standalone value '{part.value}' found but no default search column is set."
-            )
+            raise NoDefaultSearchColumnError(part.value)
 
         field_dtype = schema.get(col, nw.String)
 

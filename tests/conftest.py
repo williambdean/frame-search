@@ -1,0 +1,46 @@
+import pytest
+
+import pandas as pd
+import polars as pl
+
+import narwhals as nw
+
+from frame_search import create_search
+
+
+@pytest.fixture
+def sample_data() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "Name": ["Alice", "Bob", "Charlie", "David"],
+            "Age": [30, 25, 35, 40],
+            "Hobby": ["Reading", "Reading", "Sports", "Cooking"],
+            "City of Interest": ["New York", "Los Angeles", "New York", "Charlotte"],
+        }
+    )
+
+
+@pytest.fixture
+def sample_data_polars(sample_data) -> pl.DataFrame:
+    return pl.from_pandas(sample_data)
+
+
+@pytest.fixture
+def search():
+    return create_search(
+        mapping_to_columns={
+            "name": "Name",
+            "age": "Age",
+            "city": "City of Interest",
+            "hobby": "Hobby",
+        },
+        default="Name",
+        schema=nw.Schema(
+            {
+                "Name": str,
+                "Age": int,
+                "Hobby": str,
+                "City of Interest": str,
+            },
+        ),
+    )

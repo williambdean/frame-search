@@ -1,0 +1,29 @@
+[project]
+name = "frame-search"
+version = "0.1.0"
+description = "Query dataframes with GitHub search syntax"
+readme = "README.md"
+authors = [
+    { name = "Will Dean", email = "wd60622@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "narwhals>=2.0.1",
+]
+
+[project.scripts]
+frame-search = "frame_search:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ipython>=9.4.0",
+    "marimo>=0.14.16",
+    "pandas>=2.3.1",
+    "polars>=1.32.1",
+    "pytest>=8.4.1",
+    "ruff>=0.12.7",
+]

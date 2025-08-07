@@ -6,7 +6,7 @@ Powered by [`narwhals`](https://narwhals-dev.github.io/narwhals/).
 
 ```python
 # Import to add `search` property to DataFrames
-import frame_search # noqa: F401
+import frame_search  # noqa: F401
 
 import polars as pl
 
@@ -66,25 +66,27 @@ search = create_search("Name", {"name": "Full Name", "age": "Current Age", "Home
 ```
 
 
+This search function will work on any DataFrame library supported by `narwhals`. For example, pandas:
+
 ```python
 import pandas as pd
+
 df = pd.DataFrame({
     "Full Name": ["Alice Smith", "Bob J. Dawkins", "Charlie Brown"],
     "Current Age": [25, 30, 35],
     "Hometown": ["New York", "Los Angeles", "Chicago"]
 })
 
-
 df.pipe(search, "name:alice age:>30 hometown:miami")
 ```
 
-Or use the `search` property of DataFrames:
+Or use the `search` property of pandas and polars Frames:
 
 ```python
 import pandas as pd
 
 # Adds `search` property to DataFrames
-import frame_search
+import frame_search  # noqa: F401
 
 df = pd.DataFrame({
     "Full Name": ["Alice Smith", "Bob J. Dawkins", "Charlie Brown"],
@@ -92,6 +94,10 @@ df = pd.DataFrame({
     "Hometown": ["New York", "Los Angeles", "Chicago"]
 })
 
+query = "name:alice age:>30 hometown:miami"
+df.search(query)
 
-df.search("name:alice age:>30 hometown:miami")
+df_pl = pl.DataFrame(df)
+df_pl.search(query)
+df_pl.lazy().search(query).collect()
 ```

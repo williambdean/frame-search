@@ -33,8 +33,6 @@ shape: (1, 3)
 Use with [`marimo`](https://marimo.io/) to create a search interface for DataFrames:
 
 ```python
-import frame_search  # noqa: F401
-
 import marimo as mo
 
 search = mo.ui.text(label="DataFrame Search Query:")
@@ -46,6 +44,8 @@ Then use on a DataFrame:
 ```python
 import polars as pl
 
+import frame_search  # noqa: F401
+
 df = pl.DataFrame({
     "name": ["Alice Smith", "Bob J. Dawkins", "Charlie Brown"],
     "age": [25, 30, 35],
@@ -56,6 +56,8 @@ df_filter = df.search(search.value)
 
 df_filter
 ```
+
+Here is another example in a Marimo notebook:
 
 ![Marimo Example](./images/marimo-example.png)
 

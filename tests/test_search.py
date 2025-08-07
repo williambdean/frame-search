@@ -56,10 +56,10 @@ def test_get_search_parts(query, expected) -> None:
     "query, idx",
     [
         ("name:Alice", [0]),
-        # ("name:alice", [0]),
+        ("name:alice", [0]),
         ("bob", [1]),
         ('hobby:Reading city:"New York"', [0]),
-        # ('hobby:read city:"New York"', [0]),
+        ('hobby:read city:"New York"', [0]),
         ("age:35", [2]),
         ("age:>30", [2, 3]),
         ("age:<30", [1]),

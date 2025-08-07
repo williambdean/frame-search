@@ -105,8 +105,8 @@ def parse_search_query(
     expressions = []
     for part in parts:
         if part.is_standalone:
-            if default:
-                expressions.append(contains(default, part.value.strip('"')))
+            if default is not None and isinstance(part.value, str):
+                expressions.append(contains(default, part.value))
             else:
                 raise ValueError(
                     f"Standalone value '{part.value}' found but no default search column is set."
@@ -130,14 +130,13 @@ def parse_search_query(
                 f"Standalone value '{part.value}' found but no default search column is set."
             )
 
-        field_dtype = schema.get(col, nw.String())
+        field_dtype = schema.get(col, nw.String)
 
         if part.operator == ">":
             expressions.append(gt(col, part.value))
         elif part.operator == "<":
             expressions.append(lt(col, part.value))
-        elif isinstance(field_dtype, nw.String):
-            assert 0
+        elif field_dtype == nw.String or isinstance(field_dtype, str):
             expressions.append(contains(col, part.value))
         else:
             expressions.append(eq(col, part.value))

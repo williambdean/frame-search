@@ -46,10 +46,10 @@ def search():
         default="Name",
         schema=nw.Schema(
             {
-                "Name": str,
+                "Name": nw.String,
                 "Age": int,
-                "Hobby": str,
-                "City of Interest": str,
+                "Hobby": nw.String,
+                "City of Interest": nw.String,
                 "First Visit": nw.Datetime,
             },
         ),

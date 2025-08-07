@@ -2,7 +2,7 @@
 
 A GitHub search inspired interface to DataFrames.
 
-Powered by `narwhals`.
+Powered by [`narwhals`](https://narwhals-dev.github.io/narwhals/).
 
 ```python
 # Import to add `search` property to DataFrames
@@ -28,6 +28,33 @@ shape: (1, 3)
 ╞═════════════╪═════╪══════════╡
 │ Alice Smith ┆ 25  ┆ New York │
 └─────────────┴─────┴──────────┘
+```
+
+Use with [`marimo`](https://marimo.io/) to create a search interface for DataFrames:
+
+```python
+import frame_search  # noqa: F401
+
+import marimo as mo
+
+search = mo.ui.text(label="DataFrame Search Query:")
+search
+```
+
+Then use on a DataFrame:
+
+```python
+import polars as pl
+
+df = pl.DataFrame({
+    "name": ["Alice Smith", "Bob J. Dawkins", "Charlie Brown"],
+    "age": [25, 30, 35],
+    "hometown": ["New York", "Los Angeles", "Chicago"]
+})
+
+df_filter = df.search(search.value)
+
+df_filter
 ```
 
 # Internal API

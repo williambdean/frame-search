@@ -11,9 +11,6 @@ dependencies = [
     "narwhals"
 ]
 
-[project.scripts]
-frame-search = "frame_search:main"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

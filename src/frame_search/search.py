@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional, Union
 
 from datetime import datetime
 from dataclasses import dataclass
@@ -18,9 +18,9 @@ def is_date_like(value: str) -> bool:
 
 @dataclass
 class SearchPart:
-    key: str | None
-    operator: Operator | None
-    value: str | float | int | datetime
+    key: Optional[str]
+    operator: Optional[Operator]
+    value: Union[str, float, int, datetime]
 
     @property
     def is_standalone(self) -> bool:
@@ -41,6 +41,7 @@ def parse_query(query: str):
 
 
 def get_search_parts(query: str) -> list[SearchPart]:
+    """Parse a search query string into a list of SearchPart objects."""
     matches = parse_query(query)
 
     search_parts = []
@@ -98,11 +99,39 @@ class UnknownSearchColumnError(Exception):
 
 def parse_search_query(
     query: str,
-    mapping_to_columns: dict[str, str] | None = None,
-    default: str | None = None,
-    schema: nw.Schema | None = None,
+    mapping_to_columns: Optional[dict[str, str]] = None,
+    default: Optional[str] = None,
+    schema: Optional[nw.Schema] = None,
 ) -> nw.Expr:
-    """Custom parser for search queries from text."""
+    """Custom parser for search queries from text.
+
+    Parameters
+    ----------
+    query : str
+        The search query string to parse.
+    mapping_to_columns : dict[str, str] | None, optional
+        A mapping from search keys to column names. If None, the keys will be matched
+        directly to the schema columns.
+    default : str | None, optional
+        The default column to search in if no key is provided in the query.
+        If None, an error will be raised if a standalone value is found without a key.
+    schema : nw.Schema | None, optional
+        The schema of the dataset to search against. If None, an empty schema is used.
+
+    Returns
+    -------
+    nw.Expr
+        A Narwhals expression representing the search query.
+        This expression can be used to filter a Narwhals DataFrame.
+
+    Raises
+    ------
+    NoDefaultSearchColumnError
+        If a standalone value is found in the query but no default search column is set.
+    UnknownSearchColumnError
+        If a key in the query does not match any column in the schema or mapping.
+
+    """
 
     mapping_to_columns = mapping_to_columns or {}
     schema = schema or nw.Schema()
@@ -168,9 +197,9 @@ def parse_search_query(
 
 
 def create_search(
-    mapping_to_columns: dict[str, str] | None = None,
-    default: str | None = None,
-    schema: nw.Schema | None = None,
+    mapping_to_columns: Optional[dict[str, str]] = None,
+    default: Optional[str] = None,
+    schema: Optional[nw.Schema] = None,
 ):
     """Create a search expression with the given default and mapping."""
 

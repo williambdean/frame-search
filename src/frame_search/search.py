@@ -99,9 +99,9 @@ class UnknownSearchColumnError(Exception):
 
 def parse_search_query(
     query: str,
-    mapping_to_columns: dict[str, str] | None = None,
-    default: str | None = None,
-    schema: nw.Schema | None = None,
+    mapping_to_columns: Optional[dict[str, str]] = None,
+    default: Optional[str] = None,
+    schema: Optional[nw.Schema] = None,
 ) -> nw.Expr:
     """Custom parser for search queries from text.
 

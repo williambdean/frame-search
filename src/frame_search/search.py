@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from datetime import datetime
 from dataclasses import dataclass
@@ -19,7 +19,7 @@ def is_date_like(value: str) -> bool:
 @dataclass
 class SearchPart:
     key: str | None
-    operator: Operator | None
+    operator: Optional[Operator]
     value: str | float | int | datetime
 
     @property

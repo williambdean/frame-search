@@ -97,6 +97,13 @@ class UnknownSearchColumnError(Exception):
         super().__init__(f"Column {key!r} not found in schema or mapping.")
 
 
+class EmptySearchQueryError(Exception):
+    """Exception raised when an empty search query is provided."""
+
+    def __init__(self):
+        super().__init__("Search query cannot be empty.")
+
+
 def parse_search_query(
     query: str,
     mapping_to_columns: Optional[dict[str, str]] = None,
@@ -126,12 +133,16 @@ def parse_search_query(
 
     Raises
     ------
+    EmptySearchQueryError
+        If the search query is empty. Empty queries are handled in accessors differently.
     NoDefaultSearchColumnError
         If a standalone value is found in the query but no default search column is set.
     UnknownSearchColumnError
         If a key in the query does not match any column in the schema or mapping.
 
     """
+    if not query.strip():
+        raise EmptySearchQueryError()
 
     mapping_to_columns = mapping_to_columns or {}
     schema = schema or nw.Schema()

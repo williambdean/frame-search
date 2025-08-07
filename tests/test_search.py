@@ -12,6 +12,7 @@ from frame_search.search import (
     create_search,
     NoDefaultSearchColumnError,
     UnknownSearchColumnError,
+    EmptySearchQueryError,
 )
 
 
@@ -84,11 +85,10 @@ def test_search_functionality(sample_data, search, query, idx) -> None:
     pd.testing.assert_frame_equal(result, expected)
 
 
-@pytest.mark.xfail(reason="Empty search doesn't work in narwhals")
-def test_empty_search(sample_data) -> None:
+def test_empty_search() -> None:
     search = create_search()
-    result = nw.from_native(sample_data).filter(search("")).to_native()
-    pd.testing.assert_frame_equal(result, sample_data)
+    with pytest.raises(EmptySearchQueryError):
+        search("")
 
 
 def test_search_no_default(sample_data) -> None:

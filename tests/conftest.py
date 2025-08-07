@@ -34,6 +34,11 @@ def sample_data_polars(sample_data) -> pl.DataFrame:
 
 
 @pytest.fixture
+def sample_data_polars_lazy(sample_data) -> pl.LazyFrame:
+    return pl.from_pandas(sample_data).lazy()
+
+
+@pytest.fixture
 def search():
     return create_search(
         mapping_to_columns={

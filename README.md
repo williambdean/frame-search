@@ -4,6 +4,16 @@ A GitHub search inspired interface to DataFrames.
 
 Powered by [`narwhals`](https://narwhals-dev.github.io/narwhals/).
 
+## Installation
+
+Install from PyPI:
+
+```terminal
+uv add frame-search
+```
+
+## Usage
+
 ```python
 # Import to add `search` property to DataFrames
 import frame_search  # noqa: F401

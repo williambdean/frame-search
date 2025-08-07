@@ -91,7 +91,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "narwhals", specifier = ">=2.0.1" }]
+requires-dist = [{ name = "narwhals" }]
 
 [package.metadata.requires-dev]
 dev = [

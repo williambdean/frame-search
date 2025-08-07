@@ -1,5 +1,6 @@
 from typing import Literal
 
+from datetime import date
 from dataclasses import dataclass
 import re
 
@@ -8,11 +9,18 @@ import narwhals as nw
 Operator = Literal[":", ">", "<"]
 
 
+def is_date_like(value: str) -> bool:
+    """Check if a string is in a date-like format."""
+    yyyy_mm_dd_pattern = r"^\d{4}-\d{2}-\d{2}$"
+
+    return re.match(yyyy_mm_dd_pattern, value) is not None
+
+
 @dataclass
 class SearchPart:
     key: str | None
     operator: Operator | None
-    value: str | float | int
+    value: str | float | int | date
 
     @property
     def is_standalone(self) -> bool:
@@ -53,10 +61,16 @@ def get_search_parts(query: str) -> list[SearchPart]:
             if value.startswith('"') and value.endswith('"'):
                 value = value[1:-1]
 
-            try:
-                value = float(value) if "." in value else int(value)
-            except ValueError:
-                pass
+            if is_date_like(value):
+                # Convert to date object
+                year, month, day = map(int, value.split("-"))
+                value = date(year, month, day)
+
+            if not isinstance(value, date):
+                try:
+                    value = float(value) if "." in value else int(value)
+                except ValueError:
+                    pass
 
             search_parts.append(SearchPart(key=key, operator=operator, value=value))
 

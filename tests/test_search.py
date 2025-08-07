@@ -1,8 +1,10 @@
 import pytest
 
+from datetime import date
+
 import pandas as pd
 import narwhals as nw
-from frame_search.search import create_search, get_search_parts, SearchPart, parse_query
+from frame_search.search import get_search_parts, SearchPart, parse_query
 
 
 @pytest.mark.parametrize(
@@ -39,6 +41,10 @@ def test_parse_query(query, expected) -> None:
         ),
         ("age:>30", [SearchPart("age", ">", 30)]),
         ("age:>35.6", [SearchPart("age", ">", 35.6)]),
+        (
+            "opening_date:>2023-01-01",
+            [SearchPart("opening_date", ">", date(2023, 1, 1))],
+        ),
     ],
 )
 def test_get_search_parts(query, expected) -> None:

@@ -18,7 +18,7 @@ def is_date_like(value: str) -> bool:
 
 @dataclass
 class SearchPart:
-    key: str | None
+    key: Optional[str]
     operator: Optional[Operator]
     value: str | float | int | datetime
 

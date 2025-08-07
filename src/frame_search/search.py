@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from datetime import datetime
 from dataclasses import dataclass
@@ -20,7 +20,7 @@ def is_date_like(value: str) -> bool:
 class SearchPart:
     key: Optional[str]
     operator: Optional[Operator]
-    value: str | float | int | datetime
+    value: Union[str, float, int, datetime]
 
     @property
     def is_standalone(self) -> bool:

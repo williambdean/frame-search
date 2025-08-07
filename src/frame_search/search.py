@@ -197,9 +197,9 @@ def parse_search_query(
 
 
 def create_search(
-    mapping_to_columns: dict[str, str] | None = None,
-    default: str | None = None,
-    schema: nw.Schema | None = None,
+    mapping_to_columns: Optional[dict[str, str]] = None,
+    default: Optional[str] = None,
+    schema: Optional[nw.Schema] = None,
 ):
     """Create a search expression with the given default and mapping."""
 

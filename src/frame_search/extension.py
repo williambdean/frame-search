@@ -1,3 +1,5 @@
+from typing import Optional
+
 import narwhals as nw
 
 from frame_search.search import parse_search_query
@@ -10,8 +12,8 @@ class BaseSearchAccessor:
     def __call__(
         self,
         query: str,
-        default: str | None = None,
-        mapping_to_columns: dict[str, str] | None = None,
+        default: Optional[str] = None,
+        mapping_to_columns: Optional[dict[str, str]] = None,
     ):
         if query.strip() == "":
             return self._obj

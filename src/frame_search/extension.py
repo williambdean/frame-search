@@ -13,6 +13,9 @@ class BaseSearchAccessor:
         default: str | None = None,
         mapping_to_columns: dict[str, str] | None = None,
     ):
+        if query.strip() == "":
+            return self._obj
+
         frame = nw.from_native(self._obj)
         return frame.filter(
             parse_search_query(

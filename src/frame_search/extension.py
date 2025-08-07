@@ -12,8 +12,8 @@ class BaseSearchAccessor:
     def __call__(
         self,
         query: str,
-        default: Optional[str] = None,
         mapping_to_columns: Optional[dict[str, str]] = None,
+        default: Optional[str] = None,
     ):
         if query.strip() == "":
             return self._obj

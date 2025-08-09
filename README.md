@@ -84,4 +84,4 @@ The search syntax is inspired by GitHub's search syntax. Here are some resources
 - [Cheatsheet](https://gist.github.com/bonniss/4f0de4f599708c5268134225dda003e0)
 - [GitHub Docs](https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax)
 
-Not all syntax features are currently supported. Few the [GitHub issues](https://github.com/williambdean/frame-search/issues) for planned features or to request new ones.
+Not all syntax features are currently supported. View the [GitHub issues](https://github.com/williambdean/frame-search/issues) for planned features or to request new ones.

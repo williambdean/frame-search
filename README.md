@@ -4,6 +4,30 @@ A GitHub search inspired interface to DataFrames.
 
 Powered by [`narwhals`](https://narwhals-dev.github.io/narwhals/).
 
+## Features
+
+| Feature Category | Feature | Description | Example |
+|------------------|---------|-------------|---------|
+| **Search Syntax** | Key-Value Search | Search specific columns using key:value syntax | `name:alice` |
+| | Comparison Operators | Support for `>`, `<`, `>=`, `<=` operators | `age:>30`, `price:<=100` |
+| | Range Search | Search within ranges using `..` syntax | `age:25..35`, `date:2023-01-01..2023-12-31` |
+| | Quoted Strings | Exact phrase matching with quotes | `city:"New York"`, `title:"Data Science"` |
+| | Standalone Terms | Search default column without key | `alice` (searches default column) |
+| | Combined Queries | Multiple conditions with implicit AND | `age:>25 city:"New York"` |
+| **DataFrame Support** | Pandas DataFrames | Native `.search()` method for pandas | `df.search("name:alice")` |
+| | Polars DataFrames | Native `.search()` method for polars | `df.search("age:>30")` |
+| | Polars LazyFrames | Lazy evaluation support | `df.lazy().search("city:chicago").collect()` |
+| | Pipe Function | Use with pandas pipe | `df.pipe(search_func, "query")` |
+| **Data Types** | String Matching | Case-insensitive contains search | `name:alice` matches "Alice Smith" |
+| | Numeric Comparison | Integer and float comparisons | `age:25`, `price:99.99` |
+| | Date Support | YYYY-MM-DD date parsing and comparison | `date:2023-01-01`, `created:>2023-06-01` |
+| | Range Operations | Bounded and unbounded ranges | `*..100` (≤100), `50..*` (≥50) |
+| **Configuration** | Column Mapping | Map search keys to actual column names | `{"name": "full_name", "age": "current_age"}` |
+| | Default Column | Set default column for standalone searches | `default="description"` |
+| | Schema Awareness | Automatic data type detection | Uses DataFrame schema for type inference |
+| **Integrations** | Marimo Notebooks | Interactive search UI components | `mo.ui.text()` with `.search()` |
+| | Cross-Library | Works with any narwhals-supported library | pandas, polars, and more |
+
 ## Installation
 
 Install from PyPI:

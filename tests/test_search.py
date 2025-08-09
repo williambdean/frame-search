@@ -13,7 +13,24 @@ from frame_search.search import (
     NoDefaultSearchColumnError,
     UnknownSearchColumnError,
     EmptySearchQueryError,
+    Range,
 )
+
+
+@pytest.mark.parametrize(
+    "lower, upper",
+    [
+        (1, 10.0),
+        (datetime(2023, 1, 1), 1),
+        (datetime(2023, 1, 1), 1.0),
+    ],
+)
+def test_range_different_type_raises(lower, upper) -> None:
+    with pytest.raises(
+        TypeError,
+        match="Lower and upper bounds must be of the same type",
+    ):
+        Range(lower, upper)
 
 
 @pytest.mark.parametrize(
@@ -75,11 +92,17 @@ def test_get_search_parts(query, expected) -> None:
         ('hobby:read city:"New York"', [0]),
         ("age:35", [2]),
         ("age:>30", [2, 3]),
+        ("age:30..35", [0, 2]),
+        ("age:30..*", [0, 2, 3]),
         ("age:>=30", [0, 2, 3]),
+        ("age:*..35", [0, 1, 2]),
         ("age:<30", [1]),
         ("age:<=30", [0, 1]),
+        ("age:20.0..30", [0, 1]),
         ("hobby:Reading age:<30", [1]),
         ("first_visit:<2022-01-01", [1, 3]),
+        ("first_visit:2022-01-01..2023-12-31", [0, 2]),
+        ("first_visit:2021-01-01..*", [0, 1, 2]),
     ],
 )
 def test_search_functionality(sample_data, search, query, idx) -> None:

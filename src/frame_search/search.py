@@ -72,6 +72,18 @@ def _parse_value(value: str) -> Value:
     return value
 
 
+def _make_same_type(
+    first: Value,
+    second: Value,
+) -> tuple[Value, Value]:
+    """Ensure both values are of the same type."""
+
+    if isinstance(first, float) or isinstance(second, float):
+        first, second = float(first), float(second)
+
+    return first, second
+
+
 def get_search_parts(query: str) -> list[SearchPart]:
     """Parse a search query string into a list of SearchPart objects."""
     matches = parse_query(query)
@@ -111,6 +123,7 @@ def get_search_parts(query: str) -> list[SearchPart]:
                     value = lower
                 else:
                     operator = ":"
+                    lower, upper = _make_same_type(lower, upper)
                     value = Range(lower=lower, upper=upper)
 
                 search_parts.append(SearchPart(key=key, operator=operator, value=value))

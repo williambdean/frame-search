@@ -98,6 +98,7 @@ def test_get_search_parts(query, expected) -> None:
         ("age:*..35", [0, 1, 2]),
         ("age:<30", [1]),
         ("age:<=30", [0, 1]),
+        ("age:20.0..30", [0, 1]),
         ("hobby:Reading age:<30", [1]),
         ("first_visit:<2022-01-01", [1, 3]),
         ("first_visit:2022-01-01..2023-12-31", [0, 2]),

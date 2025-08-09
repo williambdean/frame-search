@@ -34,7 +34,7 @@ def is_date_like(value: str) -> bool:
 class SearchPart:
     key: Optional[str]
     operator: Optional[Operator]
-    value: Value | Range
+    value: Union[Value, Range]
 
     @property
     def is_standalone(self) -> bool:

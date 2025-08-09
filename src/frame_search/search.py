@@ -1,4 +1,4 @@
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, TypeAlias
 
 from datetime import datetime
 from dataclasses import dataclass
@@ -7,6 +7,20 @@ import re
 import narwhals as nw
 
 Operator = Literal[":", ">", "<", ">=", "<="]
+
+Value: TypeAlias = Union[str, float, int, datetime]
+
+
+@dataclass
+class Range:
+    lower: Value
+    upper: Value
+
+    def __post_init__(self):
+        if type(self.lower) is not type(self.upper):
+            raise TypeError(
+                f"Lower and upper bounds must be of the same type: {type(self.lower)} vs {type(self.upper)}"
+            )
 
 
 def is_date_like(value: str) -> bool:
@@ -20,7 +34,7 @@ def is_date_like(value: str) -> bool:
 class SearchPart:
     key: Optional[str]
     operator: Optional[Operator]
-    value: Union[str, float, int, datetime]
+    value: Value | Range
 
     @property
     def is_standalone(self) -> bool:
@@ -38,6 +52,24 @@ def parse_query(query: str):
     #    - Group 4: standalone value
     pattern = r'(\w+):("[^"]*"|\S+)|(\S+)'
     return list(re.findall(pattern, query))
+
+
+def _parse_value(value: str) -> Value:
+    if value.startswith('"') and value.endswith('"'):
+        value = value[1:-1]
+
+    if is_date_like(value):
+        # Convert to date object
+        year, month, day = map(int, value.split("-"))
+        return datetime(year, month, day)
+
+    if not isinstance(value, datetime):
+        try:
+            value = float(value) if "." in value else int(value)
+        except ValueError:
+            pass
+
+    return value
 
 
 def get_search_parts(query: str) -> list[SearchPart]:
@@ -62,21 +94,30 @@ def get_search_parts(query: str) -> list[SearchPart]:
             else:
                 operator = ":"
 
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
+            if ".." in value:
+                values = value.split("..")
+                if len(values) != 2:
+                    raise ValueError(f"Invalid range format in value: {value}")
 
-            if is_date_like(value):
-                # Convert to date object
-                year, month, day = map(int, value.split("-"))
-                value = datetime(year, month, day)
+                lower, upper = map(_parse_value, values)
+                lower = None if lower == "*" else lower
+                upper = None if upper == "*" else upper
 
-            if not isinstance(value, datetime):
-                try:
-                    value = float(value) if "." in value else int(value)
-                except ValueError:
-                    pass
+                if lower is None:
+                    operator = "<="
+                    value = upper
+                elif upper is None:
+                    operator = ">="
+                    value = lower
+                else:
+                    operator = ":"
+                    value = Range(lower=lower, upper=upper)
 
-            search_parts.append(SearchPart(key=key, operator=operator, value=value))
+                search_parts.append(SearchPart(key=key, operator=operator, value=value))
+
+            else:
+                value = _parse_value(value)
+                search_parts.append(SearchPart(key=key, operator=operator, value=value))
 
     return search_parts
 
@@ -206,6 +247,8 @@ def parse_search_query(
             expressions.append(le(col, part.value))
         elif field_dtype == nw.String or isinstance(field_dtype, str):
             expressions.append(contains(col, part.value))
+        elif isinstance(part.value, Range):
+            expressions.append(ge(col, part.value.lower) & le(col, part.value.upper))
         else:
             expressions.append(eq(col, part.value))
 

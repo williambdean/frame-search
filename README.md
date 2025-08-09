@@ -14,6 +14,10 @@ uv add frame-search
 
 ## Usage
 
+### API
+
+Importing `frame_search` adds a `search` properties to pandas and polars objects.
+
 ```python
 # Import to add `search` property to DataFrames
 import frame_search  # noqa: F401
@@ -39,6 +43,8 @@ shape: (1, 3)
 │ Alice Smith ┆ 25  ┆ New York │
 └─────────────┴─────┴──────────┘
 ```
+
+### Interactive Search in Marimo Notebooks
 
 Use with [`marimo`](https://marimo.io/) to create a search interface for DataFrames:
 
@@ -71,47 +77,11 @@ Here is another example in a Marimo notebook:
 
 ![Marimo Example](./images/marimo-example.png)
 
-# Internal API
+## Search Syntax
 
-```python
-from frame_search import create_search
+The search syntax is inspired by GitHub's search syntax. Here are some resources:
 
-search = create_search("Name", {"name": "Full Name", "age": "Current Age", "Hometown": "city"})
-```
+- [Cheatsheet](https://gist.github.com/bonniss/4f0de4f599708c5268134225dda003e0)
+- [GitHub Docs](https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax)
 
-
-This search function will work on any DataFrame library supported by `narwhals`. For example, pandas:
-
-```python
-import pandas as pd
-
-df = pd.DataFrame({
-    "Full Name": ["Alice Smith", "Bob J. Dawkins", "Charlie Brown"],
-    "Current Age": [25, 30, 35],
-    "Hometown": ["New York", "Los Angeles", "Chicago"]
-})
-
-df.pipe(search, "name:alice age:>30 hometown:miami")
-```
-
-Or use the `search` property of pandas and polars Frames:
-
-```python
-import pandas as pd
-
-# Adds `search` property to DataFrames
-import frame_search  # noqa: F401
-
-df = pd.DataFrame({
-    "Full Name": ["Alice Smith", "Bob J. Dawkins", "Charlie Brown"],
-    "Current Age": [25, 30, 35],
-    "Hometown": ["New York", "Los Angeles", "Chicago"]
-})
-
-query = "name:alice age:>30 hometown:miami"
-df.search(query)
-
-df_pl = pl.DataFrame(df)
-df_pl.search(query)
-df_pl.lazy().search(query).collect()
-```
+Not all syntax features are currently supported. View the [GitHub issues](https://github.com/williambdean/frame-search/issues) for planned features or to request new ones.

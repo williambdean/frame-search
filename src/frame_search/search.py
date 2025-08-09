@@ -205,7 +205,9 @@ def parse_search_query(
     schema = schema or nw.Schema()
 
     def contains(col: str, value: str):
-        return nw.col(col).str.to_lowercase().str.contains(value.lower())
+        return (
+            nw.col(col).str.to_lowercase().str.contains(value.lower().replace(",", "|"))
+        )
 
     def eq(col: str, value: str):
         return nw.col(col) == value

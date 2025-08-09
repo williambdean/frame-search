@@ -103,6 +103,9 @@ def test_get_search_parts(query, expected) -> None:
         ("first_visit:<2022-01-01", [1, 3]),
         ("first_visit:2022-01-01..2023-12-31", [0, 2]),
         ("first_visit:2021-01-01..*", [0, 1, 2]),
+        ("hobby:read|spo", [0, 1, 2]),
+        ("hobby:read,spo", [0, 1, 2]),
+        ("hobby:Reading,Sports", [0, 1, 2]),
     ],
 )
 def test_search_functionality(sample_data, search, query, idx) -> None:

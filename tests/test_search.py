@@ -22,6 +22,7 @@ from frame_search.search import (
         ("", []),
         ("bob", [("", "", "bob")]),
         ("name:alice", [("name", "alice", "")]),
+        ("age:>=30", [("age", ">=30", "")]),
         ("age:>30", [("age", ">30", "")]),
         ("age:<30", [("age", "<30", "")]),
         ("age:35.5", [("age", "35.5", "")]),
@@ -46,6 +47,7 @@ def test_parse_query(query, expected) -> None:
     [
         ("bob", [SearchPart(None, None, "bob")]),
         ("name:alice", [SearchPart("name", ":", "alice")]),
+        ("age:>=30", [SearchPart("age", ">=", 30)]),
         (
             'hobby:reading city:"New York"',
             [SearchPart("hobby", ":", "reading"), SearchPart("city", ":", "New York")],
@@ -73,7 +75,9 @@ def test_get_search_parts(query, expected) -> None:
         ('hobby:read city:"New York"', [0]),
         ("age:35", [2]),
         ("age:>30", [2, 3]),
+        ("age:>=30", [0, 2, 3]),
         ("age:<30", [1]),
+        ("age:<=30", [0, 1]),
         ("hobby:Reading age:<30", [1]),
         ("first_visit:<2022-01-01", [1, 3]),
     ],

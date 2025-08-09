@@ -6,7 +6,7 @@ import re
 
 import narwhals as nw
 
-Operator = Literal[":", ">", "<"]
+Operator = Literal[":", ">", "<", ">=", "<="]
 
 
 def is_date_like(value: str) -> bool:
@@ -52,7 +52,10 @@ def get_search_parts(query: str) -> list[SearchPart]:
         else:  # This is the key:operator:value group
             key = match[0]
             value = match[1]
-            if value.startswith(">") or value.startswith("<"):
+            if value.startswith(">=") or value.startswith("<="):
+                operator = value[:2]
+                value = value[2:]
+            elif value.startswith(">") or value.startswith("<"):
                 operator = value[0]
                 value = value[1:]
 
@@ -156,8 +159,14 @@ def parse_search_query(
     def gt(col: str, value: str):
         return nw.col(col) > value
 
+    def ge(col: str, value: str):
+        return nw.col(col) >= value
+
     def lt(col: str, value: str):
         return nw.col(col) < value
+
+    def le(col: str, value: str):
+        return nw.col(col) <= value
 
     parts = get_search_parts(query)
 
@@ -189,8 +198,12 @@ def parse_search_query(
 
         if part.operator == ">":
             expressions.append(gt(col, part.value))
+        elif part.operator == ">=":
+            expressions.append(ge(col, part.value))
         elif part.operator == "<":
             expressions.append(lt(col, part.value))
+        elif part.operator == "<=":
+            expressions.append(le(col, part.value))
         elif field_dtype == nw.String or isinstance(field_dtype, str):
             expressions.append(contains(col, part.value))
         else:

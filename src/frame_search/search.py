@@ -1,4 +1,4 @@
-from typing import Literal, Optional, Union, TypeAlias
+from typing import Literal, Optional, Union
 
 from datetime import datetime
 from dataclasses import dataclass
@@ -8,7 +8,7 @@ import narwhals as nw
 
 Operator = Literal[":", ">", "<", ">=", "<="]
 
-Value: TypeAlias = Union[str, float, int, datetime]
+Value = Union[str, float, int, datetime]
 
 
 @dataclass

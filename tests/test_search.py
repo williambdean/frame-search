@@ -2,6 +2,8 @@ import pytest
 
 from datetime import datetime
 
+import polars as pl
+import polars.testing
 import pandas as pd
 import narwhals as nw
 
@@ -36,21 +38,26 @@ def test_range_different_type_raises(lower, upper) -> None:
 @pytest.mark.parametrize(
     "query, expected",
     [
-        ("", []),
-        ("bob", [("", "", "bob")]),
-        ("name:alice", [("name", "alice", "")]),
-        ("age:>=30", [("age", ">=30", "")]),
-        ("age:>30", [("age", ">30", "")]),
-        ("age:<30", [("age", "<30", "")]),
-        ("age:35.5", [("age", "35.5", "")]),
-        ("opening_date:<2023-01-01", [("opening_date", "<2023-01-01", "")]),
-        ("bob age:>30", [("", "", "bob"), ("age", ">30", "")]),
-        (
+        pytest.param("", [], id="empty-query"),
+        pytest.param("bob", [("", "", "bob")], id=""),
+        pytest.param("name:alice", [("name", "alice", "")], id=""),
+        pytest.param("age:>=30", [("age", ">=30", "")], id=""),
+        pytest.param("age:>30", [("age", ">30", "")], id=""),
+        pytest.param("age:<30", [("age", "<30", "")], id=""),
+        pytest.param("age:35.5", [("age", "35.5", "")], id=""),
+        pytest.param(
+            "opening_date:<2023-01-01",
+            [("opening_date", "<2023-01-01", "")],
+            id="",
+        ),
+        pytest.param("bob age:>30", [("", "", "bob"), ("age", ">30", "")], id=""),
+        pytest.param(
             'hobby:reading city:"New York"',
             [
                 ("hobby", "reading", ""),
                 ("city", '"New York"', ""),
             ],
+            id="multiple-conditions",
         ),
     ],
 )
@@ -85,34 +92,55 @@ def test_get_search_parts(query, expected) -> None:
 @pytest.mark.parametrize(
     "query, idx",
     [
-        ("name:Alice", [0]),
-        ("name:alice", [0]),
-        ("bob", [1]),
-        ('hobby:Reading city:"New York"', [0]),
-        ('hobby:read city:"New York"', [0]),
-        ("age:35", [2]),
-        ("age:>30", [2, 3]),
-        ("age:30..35", [0, 2]),
-        ("age:30..*", [0, 2, 3]),
-        ("age:>=30", [0, 2, 3]),
-        ("age:*..35", [0, 1, 2]),
-        ("age:<30", [1]),
-        ("age:<=30", [0, 1]),
-        ("age:20.0..30", [0, 1]),
-        ("hobby:Reading age:<30", [1]),
-        ("first_visit:<2022-01-01", [1, 3]),
-        ("first_visit:2022-01-01..2023-12-31", [0, 2]),
-        ("first_visit:2021-01-01..*", [0, 1, 2]),
-        ("hobby:read|spo", [0, 1, 2]),
-        ("hobby:read,spo", [0, 1, 2]),
-        ("hobby:Reading,Sports", [0, 1, 2]),
+        pytest.param("name:Alice", [0], id="exact-match"),
+        pytest.param("name:alice", [0], id="case-insensitive-match"),
+        pytest.param("bob", [1], id="default-column-match"),
+        pytest.param('hobby:Reading city:"New York"', [0], id="multiple-conditions"),
+        pytest.param(
+            'hobby:read city:"New York"',
+            [0],
+            id="multiple-conditions-case-insensitive",
+        ),
+        pytest.param("age:35", [2], id="numeric-exact-match"),
+        pytest.param("age:>30", [2, 3], id="numeric-greater-than"),
+        pytest.param("age:30..35", [0, 2], id="numeric-range"),
+        pytest.param("age:30..*", [0, 2, 3], id="numeric-range-unbounded-upper"),
+        pytest.param("age:>=30", [0, 2, 3], id="numeric-greater-than-equal"),
+        pytest.param("age:*..35", [0, 1, 2], id="numeric-range-unbounded-lower"),
+        pytest.param("age:<30", [1], id="numeric-less-than"),
+        pytest.param("age:<=30", [0, 1], id="numeric-less-than-equal"),
+        pytest.param("age:20.0..30", [0, 1], id="numeric-mixed-types-range"),
+        pytest.param("hobby:Reading age:<30", [1], id="multiple-conditions-mixed"),
+        pytest.param("first_visit:<2022-01-01", [1, 3], id="date"),
+        pytest.param("first_visit:2022-01-01..2023-12-31", [0, 2], id="date-range"),
+        pytest.param("first_visit:2021-01-01..*", [0, 1, 2], id="date-unbounded-upper"),
+        pytest.param(
+            "hobby:read|spo",
+            [0, 1, 2],
+            id="logical-or-pipe-separated",
+        ),
+        pytest.param("hobby:read,spo", [0, 1, 2], id="logical-or-comma-separated"),
+        pytest.param(
+            "hobby:Reading,Sports", [0, 1, 2], id="logical-or-comma-separator"
+        ),
     ],
 )
-def test_search_functionality(sample_data, search, query, idx) -> None:
-    result = nw.from_native(sample_data).filter(search(query)).to_native()
-    expected = sample_data.iloc[idx]
-
-    pd.testing.assert_frame_equal(result, expected)
+@pytest.mark.parametrize(
+    "fixture_name",
+    [
+        pytest.param("sample_data", id="pandas"),
+        pytest.param("sample_data_polars", id="polars"),
+    ],
+)
+def test_search_functionality(request, fixture_name, search, query, idx) -> None:
+    data = request.getfixturevalue(fixture_name)
+    result = nw.from_native(data).filter(search(query)).to_native()
+    if isinstance(data, pl.DataFrame):
+        expected = data[idx]
+        polars.testing.assert_frame_equal(result, expected)
+    else:
+        expected = data.iloc[idx]
+        pd.testing.assert_frame_equal(result, expected)
 
 
 def test_empty_search() -> None:

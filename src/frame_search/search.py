@@ -25,9 +25,14 @@ class Range:
 
 def is_date_like(value: str) -> bool:
     """Check if a string is in a date-like format."""
-    yyyy_mm_dd_pattern = r"^\d{4}-\d{2}-\d{2}$"
-
-    return re.match(yyyy_mm_dd_pattern, value) is not None
+    # Updated regex to support more comprehensive date and datetime formats
+    # Supports YYYY-MM-DD and ISO 8601 formats like YYYY-MM-DDTHH:MM:SS
+    # For more details on ISO 8601, see: https://www.iso.org/iso-8601-date-and-time-format.html
+    # Regex allows for optional time, timezone, and fractional seconds
+    iso_8601_pattern = (
+        r"^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$"
+    )
+    return re.match(iso_8601_pattern, value) is not None
 
 
 @dataclass
@@ -59,9 +64,15 @@ def _parse_value(value: str) -> Value:
         value = value[1:-1]
 
     if is_date_like(value):
-        # Convert to date object
-        year, month, day = map(int, value.split("-"))
-        return datetime(year, month, day)
+        try:
+            # Handle ISO 8601 format, replacing 'Z' with timezone offset for compatibility
+            if value.endswith("Z"):
+                value = value[:-1] + "+00:00"
+            return datetime.fromisoformat(value)
+        except ValueError:
+            # Fallback for simple date format YYYY-MM-DD
+            year, month, day = map(int, value.split("-"))
+            return datetime(year, month, day)
 
     if not isinstance(value, datetime):
         try:

@@ -1,6 +1,6 @@
 [project]
 name = "frame-search"
-version = "0.1.0"
+version = "0.2.0"
 description = "Query dataframes with GitHub search syntax"
 readme = "README.md"
 authors = [

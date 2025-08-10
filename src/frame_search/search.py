@@ -40,6 +40,7 @@ class SearchPart:
     key: Optional[str]
     operator: Optional[Operator]
     value: Union[Value, Range]
+    negated: bool = False
 
     @property
     def is_standalone(self) -> bool:
@@ -49,13 +50,14 @@ class SearchPart:
 
 def parse_query(query: str):
     # Regex to capture:
-    # 1. key:operator:value (e.g., name:alice, age:">30", city:"New York")
-    #    - Group 1: key (\w+)
-    #    - Group 2: operator (:|>|<)
-    #    - Group 3: value (either "[^"]*" for quoted strings or \S+ for non-whitespace)
-    # 2. standalone value (\S+)
-    #    - Group 4: standalone value
-    pattern = r'(\w+):("[^"]*"|\S+)|(\S+)'
+    # 1. Optional negation operator (NOT or -)
+    # 2. key:operator:value (e.g., name:alice, age:">30", city:"New York")
+    #    - Group 2: key (\w+)
+    #    - Group 3: operator (:|>|<)
+    #    - Group 4: value (either "[^"]*" for quoted strings or \S+ for non-whitespace)
+    # 3. standalone value (\S+)
+    #    - Group 5: standalone value
+    pattern = r'(?:(NOT|-)\s*)?(\w+):("[^"]*"|\S+)|(?:(NOT|-)\s*)?(\S+)'
     return list(re.findall(pattern, query))
 
 
@@ -101,12 +103,16 @@ def get_search_parts(query: str) -> list[SearchPart]:
 
     search_parts = []
     for match in matches:
-        if match[2]:  # This is the standalone value group
-            value = match[2]
-            search_parts.append(SearchPart(key=None, operator=None, value=value))
+        negation, key, value, standalone_negation, standalone_value = match
+        negated = bool(negation or standalone_negation)
+
+        if standalone_value:  # This is the standalone value group
+            search_parts.append(
+                SearchPart(
+                    key=None, operator=None, value=standalone_value, negated=negated
+                )
+            )
         else:  # This is the key:operator:value group
-            key = match[0]
-            value = match[1]
             if value.startswith(">=") or value.startswith("<="):
                 operator = value[:2]
                 value = value[2:]
@@ -137,11 +143,15 @@ def get_search_parts(query: str) -> list[SearchPart]:
                     lower, upper = _make_same_type(lower, upper)
                     value = Range(lower=lower, upper=upper)
 
-                search_parts.append(SearchPart(key=key, operator=operator, value=value))
+                search_parts.append(
+                    SearchPart(key=key, operator=operator, value=value, negated=negated)
+                )
 
             else:
                 value = _parse_value(value)
-                search_parts.append(SearchPart(key=key, operator=operator, value=value))
+                search_parts.append(
+                    SearchPart(key=key, operator=operator, value=value, negated=negated)
+                )
 
     return search_parts
 
@@ -241,42 +251,46 @@ def parse_search_query(
     for part in parts:
         if part.is_standalone:
             if default is not None and isinstance(part.value, str):
-                expressions.append(contains(default, part.value))
+                expr = contains(default, part.value)
             else:
                 raise NoDefaultSearchColumnError(part.value)
-            continue
-
-        col = None
-        if part.key:
-            if part.key in mapping_to_columns:
-                col = mapping_to_columns[part.key]
+        else:
+            col = None
+            if part.key:
+                if part.key in mapping_to_columns:
+                    col = mapping_to_columns[part.key]
+                else:
+                    for schema_col in schema.keys():
+                        if part.key.lower() == schema_col.lower():
+                            col = schema_col
+                if col is None:
+                    raise UnknownSearchColumnError(part.key)
+            elif default is not None:
+                col = default
             else:
-                for schema_col in schema.keys():
-                    if part.key.lower() == schema_col.lower():
-                        col = schema_col
-            if col is None:
-                raise UnknownSearchColumnError(part.key)
-        elif default is not None:
-            col = default
-        else:
-            raise NoDefaultSearchColumnError(part.value)
+                raise NoDefaultSearchColumnError(part.value)
 
-        field_dtype = schema.get(col, nw.String)
+            field_dtype = schema.get(col, nw.String)
 
-        if part.operator == ">":
-            expressions.append(gt(col, part.value))
-        elif part.operator == ">=":
-            expressions.append(ge(col, part.value))
-        elif part.operator == "<":
-            expressions.append(lt(col, part.value))
-        elif part.operator == "<=":
-            expressions.append(le(col, part.value))
-        elif field_dtype == nw.String or isinstance(field_dtype, str):
-            expressions.append(contains(col, part.value))
-        elif isinstance(part.value, Range):
-            expressions.append(ge(col, part.value.lower) & le(col, part.value.upper))
-        else:
-            expressions.append(eq(col, part.value))
+            if part.operator == ">":
+                expr = gt(col, part.value)
+            elif part.operator == ">=":
+                expr = ge(col, part.value)
+            elif part.operator == "<":
+                expr = lt(col, part.value)
+            elif part.operator == "<=":
+                expr = le(col, part.value)
+            elif field_dtype == nw.String or isinstance(field_dtype, str):
+                expr = contains(col, part.value)
+            elif isinstance(part.value, Range):
+                expr = ge(col, part.value.lower) & le(col, part.value.upper)
+            else:
+                expr = eq(col, part.value)
+
+        if part.negated:
+            expr = ~expr
+
+        expressions.append(expr)
 
     # Combine all expressions with an AND
     if not expressions:

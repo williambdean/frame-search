@@ -39,23 +39,29 @@ def test_range_different_type_raises(lower, upper) -> None:
     "query, expected",
     [
         pytest.param("", [], id="empty-query"),
-        pytest.param("bob", [("", "", "bob")], id="default"),
-        pytest.param("name:alice", [("name", "alice", "")], id="contains-match"),
-        pytest.param("age:>=30", [("age", ">=30", "")], id="ge"),
-        pytest.param("age:>30", [("age", ">30", "")], id="gt"),
-        pytest.param("age:<30", [("age", "<30", "")], id="lt"),
-        pytest.param("age:35.5", [("age", "35.5", "")], id="exact-numeric"),
+        pytest.param("bob", [("", "", "", "", "bob")], id="default"),
+        pytest.param(
+            "name:alice", [("", "name", "alice", "", "")], id="contains-match"
+        ),
+        pytest.param("age:>=30", [("", "age", ">=30", "", "")], id="ge"),
+        pytest.param("age:>30", [("", "age", ">30", "", "")], id="gt"),
+        pytest.param("age:<30", [("", "age", "<30", "", "")], id="lt"),
+        pytest.param("age:35.5", [("", "age", "35.5", "", "")], id="exact-numeric"),
         pytest.param(
             "opening_date:<2023-01-01",
-            [("opening_date", "<2023-01-01", "")],
+            [("", "opening_date", "<2023-01-01", "", "")],
             id="date-lt",
         ),
-        pytest.param("bob age:>30", [("", "", "bob"), ("age", ">30", "")], id="mixed"),
+        pytest.param(
+            "bob age:>30",
+            [("", "", "", "", "bob"), ("", "age", ">30", "", "")],
+            id="mixed",
+        ),
         pytest.param(
             'hobby:reading city:"New York"',
             [
-                ("hobby", "reading", ""),
-                ("city", '"New York"', ""),
+                ("", "hobby", "reading", "", ""),
+                ("", "city", '"New York"', "", ""),
             ],
             id="multiple-conditions",
         ),
@@ -128,6 +134,12 @@ def test_get_search_parts(query, expected) -> None:
             "hobby:Reading,Sports", [0, 1, 2], id="logical-or-comma-separator"
         ),
         pytest.param("first_visit:>=2022-01-01T12:00:00", [0, 2], id="datetime"),
+        pytest.param("-name:Alice", [1, 2, 3], id="negation"),
+        pytest.param("NOT name:Alice", [1, 2, 3], id="negation-long"),
+        pytest.param("-bob", [0, 2, 3], id="negation-default"),
+        pytest.param("NOT bob", [0, 2, 3], id="negation-default-long"),
+        pytest.param("-age:30..35", [1, 3], id="negation-range"),
+        pytest.param("NOT age:30..35", [1, 3], id="negation-range-long"),
     ],
 )
 @pytest.mark.parametrize(

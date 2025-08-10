@@ -82,6 +82,10 @@ def test_parse_query(query, expected) -> None:
             "opening_date:>2023-01-01",
             [SearchPart("opening_date", ">", datetime(2023, 1, 1))],
         ),
+        (
+            "created_at:>2024-01-01T12:30:00",
+            [SearchPart("created_at", ">", datetime(2024, 1, 1, 12, 30))],
+        ),
     ],
 )
 def test_get_search_parts(query, expected) -> None:

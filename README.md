@@ -1,5 +1,9 @@
 # Frame Search
 
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Tests](https://github.com/williambdean/frame-search/actions/workflows/tests.yml/badge.svg)](https://github.com/williambdean/frame-search/actions/workflows/tests.yml)
+[![PyPI version](https://badge.fury.io/py/frame-search.svg)](https://badge.fury.io/py/frame-search)
+
 A GitHub search inspired interface to DataFrames.
 
 Powered by [`narwhals`](https://narwhals-dev.github.io/narwhals/).

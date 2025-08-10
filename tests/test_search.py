@@ -123,6 +123,7 @@ def test_get_search_parts(query, expected) -> None:
         pytest.param(
             "hobby:Reading,Sports", [0, 1, 2], id="logical-or-comma-separator"
         ),
+        pytest.param("first_visit:>=2022-01-01T12:00:00", [0, 2], id="datetime"),
     ],
 )
 @pytest.mark.parametrize(

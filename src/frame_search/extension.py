@@ -2,7 +2,7 @@ from typing import Optional
 
 import narwhals as nw
 
-from frame_search.search import parse_search_query
+from frame_search.search import parse
 
 
 class BaseSearchAccessor:
@@ -20,7 +20,7 @@ class BaseSearchAccessor:
 
         frame = nw.from_native(self._obj)
         return frame.filter(
-            parse_search_query(
+            parse(
                 query,
                 mapping_to_columns=mapping_to_columns,
                 default=default,

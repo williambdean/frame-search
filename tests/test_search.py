@@ -140,6 +140,48 @@ def test_get_search_parts(query, expected) -> None:
         pytest.param("NOT bob", [0, 2, 3], id="negation-default-long"),
         pytest.param("-age:30..35", [1, 3], id="negation-range"),
         pytest.param("NOT age:30..35", [1, 3], id="negation-range-long"),
+        pytest.param(
+            "name:alice AND age:<=30",
+            [0],
+            id="logical-and",
+            marks=pytest.mark.xfail,
+        ),
+        pytest.param(
+            "name:alice OR age:>35",
+            [0, 2, 3],
+            id="logical-or",
+            marks=pytest.mark.xfail,
+        ),
+        pytest.param(
+            "(name:alice OR age:>35) AND hobby:reading",
+            [0],
+            id="complex-logical",
+            marks=pytest.mark.xfail,
+        ),
+        pytest.param(
+            "is:older_than_30",
+            [2, 3],
+            id="boolean-is",
+            marks=pytest.mark.xfail,
+        ),
+        pytest.param(
+            "older_than_30:True",
+            [2, 3],
+            id="boolean-True",
+            marks=pytest.mark.xfail,
+        ),
+        pytest.param(
+            "older_than_30:False",
+            [0, 1],
+            id="boolean-False",
+            marks=pytest.mark.xfail,
+        ),
+        pytest.param(
+            "has:seen_movie",
+            [0, 2],
+            id="boolean-has",
+            marks=pytest.mark.xfail,
+        ),
     ],
 )
 @pytest.mark.parametrize(
@@ -152,6 +194,7 @@ def test_get_search_parts(query, expected) -> None:
 def test_search_functionality(request, fixture_name, search, query, idx) -> None:
     data = request.getfixturevalue(fixture_name)
     result = nw.from_native(data).filter(search(query)).to_native()
+
     if isinstance(data, pl.DataFrame):
         expected = data[idx]
         polars.testing.assert_frame_equal(result, expected)

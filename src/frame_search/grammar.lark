@@ -1,0 +1,34 @@
+?start: expr
+
+?expr: or_expr
+
+?or_expr: and_expr
+        | or_expr "|" and_expr       -> or_
+
+?and_expr: not_expr
+          | and_expr "&" not_expr    -> and_
+
+?not_expr: "~" not_expr              -> not_
+         | term
+
+?term: key ":" COMPARATOR? search_rhs
+     | "(" expr ")"
+
+?search_rhs: BACKTICKED_KEY
+          | range
+          | isin
+          | value
+
+?key: BACKTICKED_KEY
+    | BARE_KEY
+
+range: (value | BACKTICKED_KEY) ".." (value | BACKTICKED_KEY)
+isin: value ("," value)+
+value: ESCAPED_STRING | /(?:[^.\s&|()~:"',`<>=!~]|\.(?!\.))+/
+
+BACKTICKED_KEY: "`" /[^`]+/ "`"
+BARE_KEY: /[^:`]+/
+COMPARATOR: "<=" | ">=" | "<" | ">" | "==" | "!="
+
+%import common.ESCAPED_STRING
+%ignore " "

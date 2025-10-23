@@ -89,3 +89,48 @@ The search syntax is inspired by GitHub's search syntax. Here are some resources
 - [GitHub Docs](https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax)
 
 Not all syntax features are currently supported. View the [GitHub issues](https://github.com/williambdean/frame-search/issues) for planned features or to request new ones.
+
+## Features
+
+| Feature | Syntax | Example | Status |
+|---------|--------|---------|--------|
+| **Text Search** | `column:value` | `name:alice` | ✅ Supported |
+| **Case-Insensitive Search** | `column:value` | `name:Alice` → matches "alice" | ✅ Supported |
+| **Quoted Strings** | `column:"exact value"` | `city:"New York"` | ✅ Supported |
+| **Default Column Search** | `value` | `alice` (searches default column) | ✅ Supported |
+| **Numeric Comparisons** |  |  |  |
+| - Greater Than | `column:>value` | `age:>30` | ✅ Supported |
+| - Less Than | `column:<value` | `age:<30` | ✅ Supported |
+| - Greater or Equal | `column:>=value` | `age:>=30` | ✅ Supported |
+| - Less or Equal | `column:<=value` | `age:<=30` | ✅ Supported |
+| - Exact Match | `column:value` | `age:35` | ✅ Supported |
+| **Range Queries** |  |  |  |
+| - Bounded Range | `column:min..max` | `age:30..35` | ✅ Supported |
+| - Lower Bound Only | `column:min..*` | `age:30..*` | ✅ Supported |
+| - Upper Bound Only | `column:*..max` | `age:*..35` | ✅ Supported |
+| **Date/DateTime Support** |  |  |  |
+| - Date Comparison | `column:<date` | `first_visit:<2022-01-01` | ✅ Supported |
+| - DateTime Comparison | `column:>=datetime` | `created_at:>=2022-01-01T12:00:00` | ✅ Supported |
+| - Date Range | `column:start..end` | `first_visit:2022-01-01..2023-12-31` | ✅ Supported |
+| **Logical Operators** |  |  |  |
+| - Implicit AND | Multiple terms | `age:<30 hometown:"New York"` | ✅ Supported |
+| - OR (comma) | `column:val1,val2` | `hobby:reading,sports` | ✅ Supported |
+| - OR (pipe) | `column:val1\|val2` | `hobby:reading\|sports` | ✅ Supported |
+| - Explicit AND | `term1 AND term2` | `name:alice AND age:>30` | 🚧 Planned ([#19](https://github.com/williambdean/frame-search/issues/19)) |
+| - Explicit OR | `term1 OR term2` | `name:alice OR age:>35` | 🚧 Planned ([#20](https://github.com/williambdean/frame-search/issues/20)) |
+| **Negation** |  |  |  |
+| - Short Form | `-column:value` | `-name:Alice` | ✅ Supported |
+| - Long Form | `NOT column:value` | `NOT name:Alice` | ✅ Supported |
+| - Range Negation | `-column:min..max` | `-age:30..35` | ✅ Supported |
+| - Default Column | `-value` | `-bob` | ✅ Supported |
+| **Advanced Features** |  |  |  |
+| - Parentheses | `(term1 OR term2) AND term3` | `(name:alice OR age:>35) AND hobby:reading` | 🚧 Planned ([#18](https://github.com/williambdean/frame-search/issues/18)) |
+| - Boolean Columns | `is:column` or `has:column` | `is:active` or `has:verified` | 🚧 Planned ([#29](https://github.com/williambdean/frame-search/issues/29)) |
+
+### Notes
+
+- Text searches are **case-insensitive** and use **contains** matching by default
+- Numeric and date comparisons support both integers and floats
+- Date/datetime values must be in ISO 8601 format
+- Multiple conditions without explicit operators are combined with **AND** logic
+- The library automatically detects column data types from the DataFrame schema

@@ -39,29 +39,36 @@ def test_range_different_type_raises(lower, upper) -> None:
     "query, expected",
     [
         pytest.param("", [], id="empty-query"),
-        pytest.param("bob", [("", "", "", "", "bob")], id="default"),
+        pytest.param("bob", [("", "", "", "", "", "", "", "bob")], id="default"),
         pytest.param(
-            "name:alice", [("", "name", "alice", "", "")], id="contains-match"
+            "name:alice",
+            [("", "", "", "", "name", "alice", "", "")],
+            id="contains-match",
         ),
-        pytest.param("age:>=30", [("", "age", ">=30", "", "")], id="ge"),
-        pytest.param("age:>30", [("", "age", ">30", "", "")], id="gt"),
-        pytest.param("age:<30", [("", "age", "<30", "", "")], id="lt"),
-        pytest.param("age:35.5", [("", "age", "35.5", "", "")], id="exact-numeric"),
+        pytest.param("age:>=30", [("", "", "", "", "age", ">=30", "", "")], id="ge"),
+        pytest.param("age:>30", [("", "", "", "", "age", ">30", "", "")], id="gt"),
+        pytest.param("age:<30", [("", "", "", "", "age", "<30", "", "")], id="lt"),
+        pytest.param(
+            "age:35.5", [("", "", "", "", "age", "35.5", "", "")], id="exact-numeric"
+        ),
         pytest.param(
             "opening_date:<2023-01-01",
-            [("", "opening_date", "<2023-01-01", "", "")],
+            [("", "", "", "", "opening_date", "<2023-01-01", "", "")],
             id="date-lt",
         ),
         pytest.param(
             "bob age:>30",
-            [("", "", "", "", "bob"), ("", "age", ">30", "", "")],
+            [
+                ("", "", "", "", "", "", "", "bob"),
+                ("", "", "", "", "age", ">30", "", ""),
+            ],
             id="mixed",
         ),
         pytest.param(
             'hobby:reading city:"New York"',
             [
-                ("", "hobby", "reading", "", ""),
-                ("", "city", '"New York"', "", ""),
+                ("", "", "", "", "hobby", "reading", "", ""),
+                ("", "", "", "", "city", '"New York"', "", ""),
             ],
             id="multiple-conditions",
         ),
@@ -162,25 +169,21 @@ def test_get_search_parts(query, expected) -> None:
             "is:older_than_30",
             [2, 3],
             id="boolean-is",
-            marks=pytest.mark.xfail,
         ),
         pytest.param(
             "older_than_30:True",
             [2, 3],
             id="boolean-True",
-            marks=pytest.mark.xfail,
         ),
         pytest.param(
             "older_than_30:False",
             [0, 1],
             id="boolean-False",
-            marks=pytest.mark.xfail,
         ),
         pytest.param(
             "has:seen_movie",
             [0, 2],
             id="boolean-has",
-            marks=pytest.mark.xfail,
         ),
     ],
 )

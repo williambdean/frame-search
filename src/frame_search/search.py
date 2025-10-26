@@ -8,7 +8,7 @@ import narwhals as nw
 
 Operator = Literal[":", ">", "<", ">=", "<="]
 
-Value = Union[str, float, int, datetime]
+Value = Union[str, float, int, datetime, bool]
 
 
 @dataclass
@@ -39,19 +39,27 @@ class SearchPart:
 def parse_query(query: str):
     # Regex to capture:
     # 1. Optional negation operator (NOT or -)
-    # 2. key:operator:value (e.g., name:alice, age:">30", city:"New York")
-    #    - Group 2: key (\w+)
-    #    - Group 3: operator (:|>|<)
-    #    - Group 4: value (either "[^"]*" for quoted strings or \S+ for non-whitespace)
-    # 3. standalone value (\S+)
-    #    - Group 5: standalone value
-    pattern = r'(?:(NOT|-)\s*)?(\w+):("[^"]*"|\S+)|(?:(NOT|-)\s*)?(\S+)'
+    # 2. is:column or has:column for boolean columns (must come before key:value)
+    #    - Group 2: is or has
+    #    - Group 3: column name
+    # 3. key:operator:value (e.g., name:alice, age:">30", city:"New York")
+    #    - Group 4: key (\w+)
+    #    - Group 5: value (either "[^"]*" for quoted strings or \S+ for non-whitespace)
+    # 4. standalone value (\S+)
+    #    - Group 7: standalone value
+    pattern = r'(?:(NOT|-)\s*)?(is|has):(\w+)|(?:(NOT|-)\s*)?(\w+):("[^"]*"|\S+)|(?:(NOT|-)\s*)?(\S+)'
     return list(re.findall(pattern, query))
 
 
 def _parse_value(value: str) -> Value:
     if value.startswith('"') and value.endswith('"'):
         value = value[1:-1]
+
+    # Handle boolean values
+    if value.lower() == "true":
+        return True
+    elif value.lower() == "false":
+        return False
 
     try:
         return datetime.fromisoformat(value)
@@ -84,10 +92,24 @@ def get_search_parts(query: str) -> list[SearchPart]:
 
     search_parts = []
     for match in matches:
-        negation, key, value, standalone_negation, standalone_value = match
-        negated = bool(negation or standalone_negation)
+        (
+            is_has_negation,
+            is_has_keyword,
+            is_has_column,
+            negation,
+            key,
+            value,
+            standalone_negation,
+            standalone_value,
+        ) = match
+        negated = bool(negation or standalone_negation or is_has_negation)
 
-        if standalone_value:  # This is the standalone value group
+        if is_has_keyword:  # This is the is:column or has:column group
+            # For is: and has:, we treat them as column:True
+            search_parts.append(
+                SearchPart(key=is_has_column, operator=":", value=True, negated=negated)
+            )
+        elif standalone_value:  # This is the standalone value group
             search_parts.append(
                 SearchPart(
                     key=None, operator=None, value=standalone_value, negated=negated

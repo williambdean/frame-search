@@ -59,6 +59,8 @@ def search():
                 "Hobby": nw.String,
                 "City of Interest": nw.String,
                 "First Visit": nw.Datetime,
+                "seen_movie": nw.Boolean,
+                "older_than_30": nw.Boolean,
             },
         ),
     )

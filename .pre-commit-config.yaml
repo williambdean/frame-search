@@ -20,3 +20,4 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: check-added-large-files
+        exclude: ^docs/

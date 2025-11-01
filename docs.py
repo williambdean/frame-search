@@ -30,6 +30,14 @@ def _(mo):
 
     Powered by [`narwhals`](https://narwhals-dev.github.io/narwhals/).
 
+    ## Installation
+
+    Install from PyPI with:
+
+    ```terminal
+    uv add frame-search
+    ```
+
     ## Features
 
     By importing `frame_search`, DataFrames gain a `search` method that
@@ -156,6 +164,23 @@ def _(default, df, mapping_to_columns, mo, search):
         result = mo.callout(f"{type(e).__name__}: {e}")
 
     result
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        """
+
+    Using `frame-search` along visualization libraries can help quickly point out
+    interesting subsets of data.
+
+    ## Additional Information
+
+    If you encounter any issues or have feature requests, please open an issue on [GitHub](https://github.com/williambdean/frame-search/issues/new). Thanks!
+
+    """
+    )
     return
 
 

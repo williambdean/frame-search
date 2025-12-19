@@ -2,12 +2,14 @@ from collections import namedtuple
 from dataclasses import dataclass
 from datetime import datetime
 import operator
-from typing import Union, Literal, Self, Callable, Protocol, Mapping, Any
+from typing import Union, Literal, Callable, Protocol, Mapping, Any, TypeVar
 from functools import singledispatch
 
 import narwhals as nw
 
 from lark import Transformer, v_args, Token
+
+T = TypeVar("T")
 
 
 @dataclass(frozen=True)
@@ -66,7 +68,7 @@ class Node(Protocol):
     def to_expr(self) -> nw.Expr:
         ...
 
-    def replace(self, **kwargs) -> Self:
+    def replace(self: T, **kwargs) -> T:
         return type(self)(**{**vars(self), **kwargs})
 
 

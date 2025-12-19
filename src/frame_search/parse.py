@@ -56,7 +56,7 @@ COMPARATORS: Mapping[str, Callable[[nw.Expr, Any], nw.Expr]] = {
     '>=': operator.ge,
     '==': operator.eq,
     '!=': operator.ne,
-    ':': lambda left, right: comparator(right, left),
+    ':': lambda left, right: comparator(right, left), # flip comparison because of singledispatch
 }
 
 

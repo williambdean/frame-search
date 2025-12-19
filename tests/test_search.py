@@ -1,11 +1,11 @@
 import pytest
 
-
 import polars as pl
 import polars.testing
 import pandas as pd
 
 from frame_search import search
+from frame_search.parse import Range
 
 
 @pytest.mark.parametrize(
@@ -44,9 +44,10 @@ from frame_search import search
         pytest.param("`First Visit`>=2022-01-01T12:00:00", [0, 2], id="datetime"),
         pytest.param("~Name:Alice", [1, 2, 3], id="negation-tilde"),
         pytest.param("NOT Name:Alice", [1, 2, 3], id="negation-NOT"),
-        pytest.param("-Name:Alice", [1, 2, 3], id="negation-minus"),
         pytest.param('~(Hobby:Reading AND `City of Interest`:"New York")', [1, 2, 3], id="negation-multiple-conditions-and"),
         pytest.param('~(Hobby:Reading OR `City of Interest`:"New York")', [3], id="negation-multiple-conditions-or"),
+        pytest.param("older_than_30:True", [2, 3], id="boolean-True"),
+        pytest.param("older_than_30:False", [0, 1], id="boolean-False"),
     ],
 )
 @pytest.mark.parametrize(
@@ -59,6 +60,7 @@ from frame_search import search
 def test_search_functionality(request, fixture_name, query, idx) -> None:
     data = request.getfixturevalue(fixture_name)
     result = search(data, query)
+
     if isinstance(data, pl.DataFrame):
         expected = data[idx]
         polars.testing.assert_frame_equal(result, expected)

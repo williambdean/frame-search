@@ -13,6 +13,7 @@ def sample_data() -> pd.DataFrame:
             "Age": [30, 25, 35, 40],
             "Hobby": ["Reading", "Reading", "Sports", "Cooking"],
             "City of Interest": ["New York", "Los Angeles", "New York", "Charlotte"],
+            "seen_movie": [True, False, True, False],
             "First Visit": pd.to_datetime(
                 [
                     "2022-01-15",
@@ -22,6 +23,8 @@ def sample_data() -> pd.DataFrame:
                 ],
             ),
         }
+    ).assign(
+        older_than_30=lambda df: df["Age"] > 30,
     )
 
 
@@ -33,3 +36,4 @@ def sample_data_polars(sample_data) -> pl.DataFrame:
 @pytest.fixture
 def sample_data_polars_lazy(sample_data) -> pl.LazyFrame:
     return pl.from_pandas(sample_data).lazy()
+

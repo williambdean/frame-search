@@ -12,7 +12,6 @@
 
 ?not_expr: "~" not_expr              -> not_
          | "NOT" not_expr              -> not_
-         | "-" not_expr              -> not_
          | term
 
 ?term: key COMPARATOR search_rhs
@@ -30,12 +29,12 @@ value: BOOL | DATE | DATETIME | INT | FLOAT | WORD | ESCAPED_STRING | BACKTICKED
 COMPARATOR: "<=" | ">=" | "<" | ">" | "==" | "!=" | ":"
 BACKTICKED_KEY: "`" /[^`]+?/ "`"
 
-BOOL.1: "True" | "False"
-DATE.1: /\d{4}-\d{2}-\d{2}/
-DATETIME.1: /\d{4}-\d{2}-\d{2}[T]\d{2}:\d{2}:\d{2}/
-INT: /[0-9]+/
-FLOAT: /[0-9]*\.[0-9]+/
+DATE.2: /\d{4}-\d{2}-\d{2}/
+DATETIME.2: /\d{4}-\d{2}-\d{2}[T]\d{2}:\d{2}:\d{2}/
+BOOL.2: "True" | "False"
+INT.1: /[0-9]+/
+FLOAT.1: /[0-9]*\.[0-9]+/
+WORD: /[A-Za-z0-9_-]+/
 
 %import common.ESCAPED_STRING
-%import common.WORD
 %ignore " "

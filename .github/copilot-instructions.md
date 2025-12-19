@@ -96,7 +96,7 @@ result_pd = df_pd.search('age:<30 hometown:"New York"')
 ### Key Files to Check When Making Changes
 - `src/frame_search/search.py` - Core search logic and query parsing
 - `src/frame_search/pandas.py` - Pandas DataFrame extension
-- `src/frame_search/polars.py` - Polars DataFrame extension  
+- `src/frame_search/polars.py` - Polars DataFrame extension
 - `tests/test_search.py` - Add tests here for new search functionality
 - `pyproject.toml` - Dependencies and project configuration
 

@@ -1,7 +1,10 @@
 ---
+ci:
+  autofix_prs: true
+
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.7
+    rev: v0.14.2
     hooks:
       - id: ruff-check
         types_or: [python, pyi]
@@ -9,7 +12,7 @@ repos:
       - id: ruff-format
         types_or: [python, pyi]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: debug-statements
       - id: trailing-whitespace
@@ -17,3 +20,4 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: check-added-large-files
+        exclude: ^docs/

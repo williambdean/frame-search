@@ -81,11 +81,63 @@ Here is another example in a Marimo notebook:
 
 ![Marimo Example](./images/marimo-example.png)
 
-## Search Syntax
+## Search Expression Grammar
 
-The search syntax is inspired by GitHub's search syntax. Here are some resources:
+This repository defines a small, expressive query language for filtering and searching structured data.  
+The grammar is implemented in **Lark** and supports boolean logic, comparisons, ranges, set membership, dates, numbers, strings, and quoted identifiers.
 
-- [Cheatsheet](https://gist.github.com/bonniss/4f0de4f599708c5268134225dda003e0)
-- [GitHub Docs](https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax)
+The language is designed to be:
 
-Not all syntax features are currently supported. View the [GitHub issues](https://github.com/williambdean/frame-search/issues) for planned features or to request new ones.
+- Readable for humans
+- Unambiguous for the parser
+- Flexible enough to express common filtering patterns
+
+### Syntax Overview
+
+A query is an **expression** composed of:
+
+- Boolean operators: `AND`, `OR`, `NOT` (with symbolic aliases `&`, `|`, `~`)
+- Comparisons between a **key** and a **value**
+- Range expressions (`..`)
+- Set membership (`value,value,...`)
+- Parentheses for grouping
+
+At a high level:
+
+```
+<key> <comparator> <search_rhs>
+```
+
+Where a **key** identifies the field being queried. A **comparator** represents an operator that compares two sides (e.g. <, >, ==).
+**search_rhs** can take on many different values including dates/datetimes, integers/floats, booleans, strings, and other columns.
+
+### Keys
+
+Keys identify the field being queried, and are always inferred to exist on the left side of any comparison.
+To refer to column names that have spaces in them, one needs to surround the name in backticks.
+
+```
+name:Alice         # queries the name column for the string Alice
+`first name`:Alice # queries the `first name` column for the string Alice
+`first.name`:Alice # queries the `first.name` column for the string Alice
+```
+
+In the above example, both "first name" and "first.name" must be surrounded in backticks.
+
+### Comparators
+
+| Operator | Meaning | 
+| ----     | ---- |
+| `==`     | equality |
+| `!=`     | inequality |
+| `<`      | less than |
+| `<=`     | less than or equal |
+| `>`      | greater than |
+| `>=`     | greater than or equal |
+| `:`      | value dependent |
+
+The `:` operator is special in that it allows for a flexible supset of expressions to be parsed and used
+
+- `str`: `name:Alice` queries the name column for any value that starts with Alice or alice (case-insensitive prefix matching)
+- `isin`: `name:Alice,Bob` queries the name column for either Alice or Bob (same as case-insensitive prefix matching for strings)
+- `range`: `age:20..40` queries the age column for any value between 20 and 40 (inclusive)

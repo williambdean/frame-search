@@ -2,7 +2,7 @@ from collections import namedtuple
 from dataclasses import dataclass
 from datetime import datetime
 import operator
-from typing import Union, Literal, Callable, Protocol, Mapping, Any, TypeVar
+from typing import Union, Literal, Callable, Protocol, Mapping, Any, TypeVar, Optional
 from functools import singledispatch
 
 import narwhals as nw
@@ -14,7 +14,7 @@ T = TypeVar("T")
 
 @dataclass(frozen=True)
 class Column:
-    name: str | None
+    name: Optional[str]
 
     def __call__(self) -> nw.Expr:
         if self.name is None:
@@ -74,7 +74,7 @@ class Node(Protocol):
 
 @dataclass(frozen=True)
 class SearchNode(Node):
-    value: Value | IsIn | Range
+    value: Union[Value, IsIn, Range]
     comparator: Literal["<", "<=", ">", ">=", "==", "!=", ":"]
     key: Column = Column(None)
     negated: bool = False

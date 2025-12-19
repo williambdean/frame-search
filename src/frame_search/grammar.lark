@@ -4,31 +4,38 @@
 
 ?or_expr: and_expr
         | or_expr "|" and_expr       -> or_
+        | or_expr "OR" and_expr       -> or_
 
 ?and_expr: not_expr
           | and_expr "&" not_expr    -> and_
+          | and_expr "AND" not_expr    -> and_
 
 ?not_expr: "~" not_expr              -> not_
+         | "NOT" not_expr              -> not_
+         | "-" not_expr              -> not_
          | term
 
-?term: key ":" COMPARATOR? search_rhs
+?term: key COMPARATOR search_rhs
      | "(" expr ")"
 
-?search_rhs: BACKTICKED_KEY
-          | range
-          | isin
-          | value
+?search_rhs: range | isin | value
 
-?key: BACKTICKED_KEY
-    | BARE_KEY
+key: BACKTICKED_KEY
+   | WORD
 
-range: (value | BACKTICKED_KEY) ".." (value | BACKTICKED_KEY)
+range: value ".." value
 isin: value ("," value)+
-value: ESCAPED_STRING | /(?:[^.\s&|()~:"',`<>=!~]|\.(?!\.))+/
+value: BOOL | DATE | DATETIME | INT | FLOAT | WORD | ESCAPED_STRING | BACKTICKED_KEY
 
-BACKTICKED_KEY: "`" /[^`]+/ "`"
-BARE_KEY: /[^:`]+/
-COMPARATOR: "<=" | ">=" | "<" | ">" | "==" | "!="
+COMPARATOR: "<=" | ">=" | "<" | ">" | "==" | "!=" | ":"
+BACKTICKED_KEY: "`" /[^`]+?/ "`"
+
+BOOL.1: "True" | "False"
+DATE.1: /\d{4}-\d{2}-\d{2}/
+DATETIME.1: /\d{4}-\d{2}-\d{2}[T]\d{2}:\d{2}:\d{2}/
+INT: /[0-9]+/
+FLOAT: /[0-9]*\.[0-9]+/
 
 %import common.ESCAPED_STRING
+%import common.WORD
 %ignore " "

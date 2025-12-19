@@ -3,7 +3,6 @@ import pytest
 import pandas as pd
 import polars as pl
 
-import narwhals as nw
 
 
 @pytest.fixture

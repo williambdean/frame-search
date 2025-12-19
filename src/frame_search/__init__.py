@@ -1,6 +1,6 @@
 import importlib.util
 
-from frame_search.search import parse, search
+from .search import search, parse
 
 
 if importlib.util.find_spec("pandas") is not None:

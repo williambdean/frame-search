@@ -5,7 +5,6 @@ import polars.testing
 import pandas as pd
 
 from frame_search import search
-from frame_search.parse import Range
 
 
 @pytest.mark.parametrize(

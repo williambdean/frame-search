@@ -1,6 +1,12 @@
 import importlib.util
 
-from .search import search, parse
+from frame_search.search import (
+    create_search,
+    parse_search_query,
+    EmptySearchQueryError,
+    NoDefaultSearchColumnError,
+    UnknownSearchColumnError,
+)
 
 
 if importlib.util.find_spec("pandas") is not None:
@@ -11,6 +17,9 @@ if importlib.util.find_spec("polars") is not None:
 
 
 __all__ = [
-    "parse",
-    "search",
+    "create_search",
+    "parse_search_query",
+    "EmptySearchQueryError",
+    "NoDefaultSearchColumnError",
+    "UnknownSearchColumnError",
 ]

@@ -3,6 +3,8 @@ import pytest
 import pandas as pd
 import polars as pl
 
+from frame_search.search import create_search
+
 
 @pytest.fixture
 def sample_data() -> pd.DataFrame:
@@ -35,3 +37,20 @@ def sample_data_polars(sample_data) -> pl.DataFrame:
 @pytest.fixture
 def sample_data_polars_lazy(sample_data) -> pl.LazyFrame:
     return pl.from_pandas(sample_data).lazy()
+
+
+@pytest.fixture
+def search():
+    return create_search(
+        mapping_to_columns={
+            "name": "Name",
+            "age": "Age",
+            "hobby": "Hobby",
+            "city": "City of Interest",
+            "seen_movie": "seen_movie",
+            "visit": "First Visit",
+            "first_visit": "First Visit",
+            "older_than_30": "older_than_30",
+        },
+        default="Name",
+    )

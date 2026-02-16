@@ -1,40 +1,78 @@
+// Grammar for search queries with boolean operators
+// Supports: AND/OR/NOT, parentheses, ranges, multi-value (isin), comparators
+//
+// Uses terminal priorities to ensure key:value is matched before standalone
+
 ?start: expr
 
+// Expression hierarchy (precedence: NOT > AND > OR)
+// Implicit AND: space-separated terms without explicit operator
 ?expr: or_expr
 
 ?or_expr: and_expr
-        | or_expr "|" and_expr       -> or_
-        | or_expr "OR" and_expr       -> or_
+        | or_expr _OR and_expr           -> or_
 
 ?and_expr: not_expr
-          | and_expr "&" not_expr    -> and_
-          | and_expr "AND" not_expr    -> and_
+         | and_expr _AND? not_expr       -> and_
 
-?not_expr: "~" not_expr              -> not_
-         | "NOT" not_expr              -> not_
-         | term
+?not_expr: _NOT not_expr                 -> not_
+         | atom
 
-?term: key COMPARATOR search_rhs
-     | "(" expr ")"
+?atom: "(" expr ")"
+     | term
 
-?search_rhs: range | isin | value
+// Terms: key:value, is:column, has:column, or standalone value
+// Order matters - more specific patterns first
+?term: boolean_column
+     | key_value
+     | standalone
 
-key: BACKTICKED_KEY
-   | WORD
+// is:column or has:column for boolean columns
+boolean_column: BOOLEAN_PREFIX COLUMN_NAME
 
-range: value ".." value
+// key:value - KEY_COLON includes the colon to avoid ambiguity with standalone
+key_value: KEY_COLON COMPARATOR? search_rhs
+
+// Standalone value (no colon)
+standalone: STANDALONE_VALUE
+
+?search_rhs: BACKTICKED_KEY
+           | range
+           | isin
+           | value
+
+range: (value | BACKTICKED_KEY | WILDCARD) ".." (value | BACKTICKED_KEY | WILDCARD)
 isin: value ("," value)+
-value: BOOL | DATE | DATETIME | INT | FLOAT | WORD | ESCAPED_STRING | BACKTICKED_KEY
+value: ESCAPED_STRING | VALUE_CHARS
 
-COMPARATOR: "<=" | ">=" | "<" | ">" | "==" | "!=" | ":"
-BACKTICKED_KEY: "`" /[^`]+?/ "`"
+// Boolean operators - use underscore prefix to discard the token
+_OR: /\|(?!\|)/ | "OR"i
+_AND: "&" | "AND"i
+_NOT: "~" | "-" | "NOT"i
 
-DATE.2: /\d{4}-\d{2}-\d{2}/
-DATETIME.2: /\d{4}-\d{2}-\d{2}[T]\d{2}:\d{2}:\d{2}/
-BOOL.2: "True" | "False"
-INT.1: /[0-9]+/
-FLOAT.1: /[0-9]*\.[0-9]+/
-WORD: /[A-Za-z0-9_-]+/
+// Terminals - higher priority number = higher priority
+// BOOLEAN_PREFIX must come before KEY_COLON
+BOOLEAN_PREFIX.3: "is:"i | "has:"i
+
+// KEY_COLON captures the key AND the colon together - avoids ambiguity
+// Higher priority than STANDALONE_VALUE
+KEY_COLON.2: /(?!(?:is|has):)[a-zA-Z_][a-zA-Z0-9_]*:/ | /`[^`]+`:/
+
+// STANDALONE_VALUE - lower priority, only matches when no colon follows
+STANDALONE_VALUE.1: /(?!(?:AND|OR|NOT)\b)(?!(?:is|has):)[a-zA-Z_][a-zA-Z0-9_]*/i
+
+BACKTICKED_KEY: /`[^`]+`/
+COLUMN_NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
+COMPARATOR: "<=" | ">=" | "<" | ">" | "==" | "!="
+WILDCARD: "*"
+
+// Value characters:
+// - Allow colons for datetime values (2022-01-01T12:00:00)
+// - Allow dots for decimals, but stop at ".." for ranges
+// - Exclude operators and special chars: & | ( ) ~ " ' , ` < > = !
+// Match: anything that's not a special char, OR a dot not followed by another dot,
+//        OR a colon not at the start (for datetime T12:00:00)
+VALUE_CHARS: /[^\s&|()~:"',`<>=!.*]+(?:(?:\.[^\s&|()~:"',`<>=!.*]+)+|(?::[^\s&|()~:"',`<>=!*]+)+)*/
 
 %import common.ESCAPED_STRING
-%ignore " "
+%ignore / +/

@@ -11,3 +11,13 @@ class EmptySearchQueryError(Exception):
 
     def __init__(self):
         super().__init__("Search query cannot be empty.")
+
+
+class NoDefaultSearchColumnError(Exception):
+    """Exception raised when a standalone value is found but no default column is set."""
+
+    def __init__(self, value):
+        self.value = value
+        super().__init__(
+            f"Standalone value {value!r} found but no default search column is set."
+        )

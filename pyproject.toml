@@ -1,6 +1,6 @@
 [project]
 name = "frame-search"
-version = "0.3.0"
+version = "0.2.0"
 description = "Query dataframes with GitHub search syntax"
 readme = "README.md"
 authors = [
@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+    "lark>=1.2.2",
     "narwhals",
 ]
 
@@ -21,10 +22,10 @@ dev = [
     "marimo>=0.14.16",
     "pandas>=2.3.1",
     "polars>=1.32.1",
+    "pyright>=1.1.407",
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
     "ruff>=0.12.7",
-    "openai>=2.6.1",
 ]
 
 [tool.pytest.ini_options]

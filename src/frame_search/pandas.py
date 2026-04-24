@@ -24,6 +24,5 @@ class SearchAccessor(BaseSearchAccessor):
             'B': ['apple', 'banana', 'cherry']
         })
 
-        df.search("A:>1")
-
+        df.search("A>1")
     """

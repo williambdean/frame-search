@@ -1,0 +1,40 @@
+?start: expr
+
+?expr: or_expr
+
+?or_expr: and_expr
+        | or_expr "|" and_expr       -> or_
+        | or_expr "OR" and_expr       -> or_
+
+?and_expr: not_expr
+          | and_expr "&" not_expr    -> and_
+          | and_expr "AND" not_expr    -> and_
+
+?not_expr: "~" not_expr              -> not_
+         | "NOT" not_expr              -> not_
+         | term
+
+?term: key COMPARATOR search_rhs
+     | "(" expr ")"
+
+?search_rhs: range | isin | value
+
+key: BACKTICKED_KEY
+   | WORD
+
+range: value ".." value
+isin: value ("," value)+
+value: BOOL | DATE | DATETIME | INT | FLOAT | WORD | ESCAPED_STRING | BACKTICKED_KEY
+
+COMPARATOR: "<=" | ">=" | "<" | ">" | "==" | "!=" | ":"
+BACKTICKED_KEY: "`" /[^`]+?/ "`"
+
+DATE.2: /\d{4}-\d{2}-\d{2}/
+DATETIME.2: /\d{4}-\d{2}-\d{2}[T]\d{2}:\d{2}:\d{2}/
+BOOL.2: "True" | "False"
+INT.1: /[0-9]+/
+FLOAT.1: /[0-9]*\.[0-9]+/
+WORD: /[A-Za-z0-9_-]+/
+
+%import common.ESCAPED_STRING
+%ignore " "

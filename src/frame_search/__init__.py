@@ -1,6 +1,6 @@
 import importlib.util
 
-from frame_search.search import parse_search_query, create_search
+from .search import search, parse
 
 
 if importlib.util.find_spec("pandas") is not None:
@@ -11,6 +11,6 @@ if importlib.util.find_spec("polars") is not None:
 
 
 __all__ = [
-    "parse_search_query",
-    "create_search",
+    "parse",
+    "search",
 ]

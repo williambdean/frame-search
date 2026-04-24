@@ -183,6 +183,18 @@ def test_dates(request, fixture_name, search, query, idx) -> None:
     [
         pytest.param("hobby:read,spo", [0, 1, 2], id="multi-value-comma-separated"),
         pytest.param("hobby:Reading,Sports", [0, 1, 2], id="multi-value-full-words"),
+        # Regression test for https://github.com/williambdean/frame-search/issues/38
+        # Quoted strings with spaces in multi-value (isin) expressions
+        pytest.param(
+            'city:"New York","Los Angeles"',
+            [0, 1, 2],
+            id="multi-value-two-quoted-with-spaces",
+        ),
+        pytest.param(
+            'city:"New York","Los Angeles","Charlotte"',
+            [0, 1, 2, 3],
+            id="multi-value-three-quoted-with-spaces",
+        ),
     ],
 )
 @pytest.mark.parametrize(

@@ -81,6 +81,25 @@ Here is another example in a Marimo notebook:
 
 ![Marimo Example](./images/marimo-example.png)
 
+## Features
+
+| Syntax | Description | Example |
+|--------|-------------|---------|
+| `key:value` | Case-insensitive substring match | `name:alice` |
+| `key:value1,value2` | Match any of the values (isin) | `hobby:Reading,Sports` |
+| `key:low..high` | Range match (inclusive) | `age:20..40` |
+| `key:>value` | Comparator (`<`, `<=`, `>`, `>=`, `==`, `!=`) | `age:>30` |
+| `"quoted value"` | Exact string with spaces | `city:"New York"` |
+| `is:col` | Boolean column is `True` | `is:active` |
+| `has:col` | Column is not null | `has:nickname` |
+| `no:col` | Column is null | `no:nickname` |
+| `term1 term2` | Implicit AND (space-separated) | `name:alice age:>20` |
+| `term1 AND term2` / `term1 & term2` | Explicit AND | `name:alice AND age:>20` |
+| `term1 OR term2` / `term1 \| term2` | OR operator | `hobby:Reading OR hobby:Sports` |
+| `NOT term` / `-term` / `~term` | Negation | `-name:alice`, `NOT age:>30` |
+| `(expr)` | Grouping with parentheses | `(name:alice OR name:bob) AND age:>20` |
+| `` `col name`:value `` | Backtick-quoted column with spaces | `` `first name`:alice `` |
+
 ## Search Expression Grammar
 
 This repository defines a small, expressive query language for filtering and searching structured data.

@@ -63,19 +63,23 @@ COMPARATORS: dict[str, Callable] = {
 
 @dataclass
 class SearchNode:
-    """A search term node (key:value, is:column, or standalone value)."""
+    """A search term node (key:value, is:column, has:column, no:column, or standalone value)."""
 
     value: Value | IsIn | Range
     key: Optional[str] = None
     comparator: Optional[str] = None
     negated: bool = False
-    is_boolean_column: bool = False  # For is: and has: syntax
+    is_boolean_column: bool = False  # For is: syntax
+    is_null_check: bool = False  # For has: (not null) and no: (is null) syntax
 
     @property
     def is_standalone(self) -> bool:
         """Check if this is a standalone value without a key."""
         return (
-            self.key is None and self.comparator is None and not self.is_boolean_column
+            self.key is None
+            and self.comparator is None
+            and not self.is_boolean_column
+            and not self.is_null_check
         )
 
 
@@ -158,11 +162,21 @@ class ExprTransformer(Transformer):
         return node
 
     def boolean_column(self, prefix: Token, column: Token) -> SearchNode:
-        """Handle is:column and has:column syntax."""
+        """Handle is:column syntax — column value is True."""
         return SearchNode(
             key=column.value,
             value=True,
             is_boolean_column=True,
+        )
+
+    def null_check(self, prefix: Token, column: Token) -> SearchNode:
+        """Handle has:column (not null) and no:column (is null) syntax."""
+        is_null = prefix.value.lower().startswith("no")
+        return SearchNode(
+            key=column.value,
+            value=None,
+            is_null_check=True,
+            negated=is_null,  # negated=True means "is null" (no:), False means "not null" (has:)
         )
 
     def key_value(self, *parts) -> SearchNode:
@@ -260,6 +274,14 @@ def _build_expr(
         if search_node.negated:
             expr = ~expr
         return expr
+
+    if search_node.is_null_check:
+        assert search_node.key is not None
+        col = _resolve_column(search_node.key, mapping_to_columns, schema)
+        if search_node.negated:  # no:col — is null
+            return nw.col(col).is_null()
+        else:  # has:col — is not null
+            return ~nw.col(col).is_null()
 
     if search_node.is_standalone:
         if default is None:

@@ -23,6 +23,7 @@ def sample_data() -> pd.DataFrame:
                     "2020-11-05",
                 ],
             ),
+            "Nickname": ["Al", None, "Chuck", None],
         }
     ).assign(
         older_than_30=lambda df: df["Age"] > 30,
@@ -31,12 +32,34 @@ def sample_data() -> pd.DataFrame:
 
 @pytest.fixture
 def sample_data_polars(sample_data) -> pl.DataFrame:
-    return pl.from_pandas(sample_data)
+    return pl.DataFrame(
+        {
+            "Name": sample_data["Name"].tolist(),
+            "Age": sample_data["Age"].tolist(),
+            "Hobby": sample_data["Hobby"].tolist(),
+            "City of Interest": sample_data["City of Interest"].tolist(),
+            "seen_movie": sample_data["seen_movie"].tolist(),
+            "First Visit": sample_data["First Visit"].tolist(),
+            "older_than_30": sample_data["older_than_30"].tolist(),
+            "Nickname": ["Al", None, "Chuck", None],
+        }
+    )
 
 
 @pytest.fixture
 def sample_data_polars_lazy(sample_data) -> pl.LazyFrame:
-    return pl.from_pandas(sample_data).lazy()
+    return pl.DataFrame(
+        {
+            "Name": sample_data["Name"].tolist(),
+            "Age": sample_data["Age"].tolist(),
+            "Hobby": sample_data["Hobby"].tolist(),
+            "City of Interest": sample_data["City of Interest"].tolist(),
+            "seen_movie": sample_data["seen_movie"].tolist(),
+            "First Visit": sample_data["First Visit"].tolist(),
+            "older_than_30": sample_data["older_than_30"].tolist(),
+            "Nickname": ["Al", None, "Chuck", None],
+        }
+    ).lazy()
 
 
 @pytest.fixture
@@ -51,6 +74,7 @@ def search():
             "visit": "First Visit",
             "first_visit": "First Visit",
             "older_than_30": "older_than_30",
+            "nickname": "Nickname",
         },
         default="Name",
     )

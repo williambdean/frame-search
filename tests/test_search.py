@@ -263,9 +263,9 @@ def test_negation(request, fixture_name, search, query, idx) -> None:
 @pytest.mark.parametrize(
     "query, idx",
     [
-        # is: and has: syntax
+        # is: syntax — column value is True (boolean columns)
         pytest.param("is:older_than_30", [2, 3], id="boolean-is"),
-        pytest.param("has:seen_movie", [0, 2], id="boolean-has"),
+        pytest.param("is:seen_movie", [0, 2], id="boolean-is-seen-movie"),
         # Explicit True/False values
         pytest.param("older_than_30:True", [2, 3], id="boolean-True"),
         pytest.param("older_than_30:False", [0, 1], id="boolean-False"),
@@ -279,6 +279,42 @@ def test_negation(request, fixture_name, search, query, idx) -> None:
     ],
 )
 def test_boolean_columns(request, fixture_name, search, query, idx) -> None:
+    data = request.getfixturevalue(fixture_name)
+    result = nw.from_native(data).filter(search(query)).to_native()
+
+    if isinstance(data, pl.DataFrame):
+        expected = data[idx]
+        polars.testing.assert_frame_equal(result, expected)
+    else:
+        expected = data.iloc[idx]
+        pd.testing.assert_frame_equal(result, expected)
+
+
+# =============================================================================
+# Null / Existence Tests (has: and no:)
+# =============================================================================
+
+
+@pytest.mark.parametrize(
+    "query, idx",
+    [
+        # has: — column is not null (rows 0 and 2 have a Nickname)
+        pytest.param("has:nickname", [0, 2], id="has-not-null"),
+        # no: — column is null (rows 1 and 3 have no Nickname)
+        pytest.param("no:nickname", [1, 3], id="no-is-null"),
+        # Combined with other terms
+        pytest.param("has:nickname name:Alice", [0], id="has-combined-with-term"),
+        pytest.param("no:nickname name:Bob", [1], id="no-combined-with-term"),
+    ],
+)
+@pytest.mark.parametrize(
+    "fixture_name",
+    [
+        pytest.param("sample_data", id="pandas"),
+        pytest.param("sample_data_polars", id="polars"),
+    ],
+)
+def test_null_checks(request, fixture_name, search, query, idx) -> None:
     data = request.getfixturevalue(fixture_name)
     result = nw.from_native(data).filter(search(query)).to_native()
 

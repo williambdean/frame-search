@@ -7,11 +7,13 @@ on:
       - "src/**"
       - "pyproject.toml"
       - "tests/**"
+      - "uv.lock"
   pull_request:
     paths:
       - "src/**"
       - "pyproject.toml"
       - "tests/**"
+      - "uv.lock"
 
 jobs:
   test:
@@ -33,6 +35,9 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
+
+      - name: Check lockfile is up to date
+        run: uv lock --check
 
       - name: Install the project
         run: uv sync --locked --all-extras --dev

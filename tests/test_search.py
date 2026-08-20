@@ -5,6 +5,8 @@ which is configured via create_search() with column mappings,
 default column, and schema.
 """
 
+from datetime import datetime, timedelta
+
 import pytest
 
 import polars as pl
@@ -14,6 +16,7 @@ import narwhals as nw
 
 from frame_search.search import (
     create_search,
+    maybe_parse,
     NoDefaultSearchColumnError,
     UnknownSearchColumnError,
     EmptySearchQueryError,
@@ -462,3 +465,71 @@ def test_search_unknown_column_raises(sample_data) -> None:
         match="Column 'unknown_column'",
     ):
         nw.from_native(sample_data).filter(search("unknown_column:alice"))
+
+
+# =============================================================================
+# @today Relative Date Tests
+# =============================================================================
+
+
+class TestRelativeDates:
+    """Tests for @today relative date parsing."""
+
+    @pytest.mark.parametrize(
+        "value,expected_delta_days",
+        [
+            ("@today", 0),
+            ("@today-1d", 1),
+            ("@today-7d", 7),
+            ("@today-30d", 30),
+            ("@today-1w", 7),
+            ("@today-2w", 14),
+            ("@today-1y", 365),
+            ("@today-2y", 730),
+            ("@today+1d", -1),
+            ("@today+7d", -7),
+            ("@today+30d", -30),
+            ("@today+1y", -365),
+        ],
+    )
+    def test_valid_relative_date_parsing(self, value, expected_delta_days):
+        result = maybe_parse(value)
+        expected_date = datetime.now().date() - timedelta(days=expected_delta_days)
+        assert result.date() == expected_date
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "@today-0d",
+            "@today+0d",
+        ],
+    )
+    def test_zero_offset_returns_today(self, value):
+        result = maybe_parse(value)
+        assert result.date() == datetime.now().date()
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "@today-1d",
+            "@today+1d",
+        ],
+    )
+    def test_time_component_is_midnight(self, value):
+        result = maybe_parse(value)
+        assert result.hour == 0
+        assert result.minute == 0
+        assert result.second == 0
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "@today-1x",  # invalid unit
+            "@yesterday",  # not @today prefix
+            "@today-",  # missing number and unit
+            "@todayabc",  # missing separator
+        ],
+    )
+    def test_invalid_patterns_return_original_string(self, value):
+        result = maybe_parse(value)
+        assert result == value

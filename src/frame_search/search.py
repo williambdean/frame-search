@@ -5,9 +5,10 @@ This module provides the main API for parsing search queries and filtering DataF
 
 from __future__ import annotations
 
+import re
 from collections import namedtuple
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import Callable, Optional, Union
 import operator
 
@@ -99,6 +100,9 @@ Node = Union[SearchNode, BinaryOp]
 # Value Parsing
 # =============================================================================
 
+# Pattern: @today[+-]<number><unit> where unit is d (days), w (weeks), y (years)
+_TODAY_PATTERN = re.compile(r"^@today([+-]\d+)([dwy])$", re.IGNORECASE)
+
 
 def maybe_parse(value: str) -> Value:
     """Parse a string value into the appropriate type."""
@@ -111,6 +115,22 @@ def maybe_parse(value: str) -> Value:
         return True
     elif lowered == "false":
         return False
+    elif lowered == "@today":
+        return datetime.combine(date.today(), datetime.min.time())
+
+    # Check for @today relative date (e.g., @today-30d, @today+1w)
+    match = _TODAY_PATTERN.match(value)
+    if match:
+        offset = int(match.group(1))
+        unit = match.group(2).lower()
+        today = date.today()
+        if unit == "d":
+            delta = timedelta(days=offset)
+        elif unit == "w":
+            delta = timedelta(weeks=offset)
+        else:  # unit == "y"
+            delta = timedelta(days=offset * 365)
+        return datetime.combine(today + delta, datetime.min.time())
 
     try:
         return datetime.fromisoformat(value)

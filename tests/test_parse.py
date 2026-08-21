@@ -21,6 +21,10 @@ from frame_search.search import SearchNode, BinaryOp, create_parser
         "`opening date`:>=2023-01-01",
         "~`opening date`:>=2023-01-01",
         "column:==`other column`",
+        "first_visit:>@today-30d",
+        "first_visit:<@today-1y",
+        "first_visit:@today-365d..@today",
+        "created_at:>@today+7d",
     ],
 )
 def test_parse_query(query):
